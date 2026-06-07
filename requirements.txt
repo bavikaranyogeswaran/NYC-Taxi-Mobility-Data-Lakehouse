@@ -1,0 +1,24 @@
+# ─────────────────────────────────────────────────────
+# NYC Taxi Mobility Data Lakehouse - Python Dependencies
+# ─────────────────────────────────────────────────────
+
+# Core Compute Engine
+pyspark==3.5.1
+
+# Delta Lake integration for PySpark (must match PySpark version)
+delta-spark==3.2.0
+
+# HTTP requests for downloading raw data files
+requests==2.32.3
+
+# Fast columnar in-memory format for Parquet read/write
+pyarrow==16.1.0
+
+# In-process analytical SQL engine (used for Gold validation)
+duckdb==1.0.0
+
+# Utility: pretty printing of DataFrames during validation
+tabulate==0.9.0
+
+# Utility: environment variable management
+python-dotenv==1.0.1
