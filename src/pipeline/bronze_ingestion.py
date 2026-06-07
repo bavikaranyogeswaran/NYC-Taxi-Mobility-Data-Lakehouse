@@ -19,6 +19,7 @@ Usage:
 ─────────────────────────────────────────────────────────────────
 """
 
+import os
 import sys
 import uuid
 import logging
@@ -70,6 +71,16 @@ def create_spark_session():
     """
     from pyspark.sql import SparkSession
     from delta import configure_spark_with_delta_pip
+
+    # ── Windows fix: PySpark requires HADOOP_HOME + winutils.exe ─────────────
+    # On Windows, Hadoop uses winutils.exe for filesystem permission operations.
+    # We ship winutils.exe inside the project's hadoop/bin/ folder so the user
+    # doesn't need to install anything extra or set system environment variables.
+    hadoop_home = str(PROJECT_ROOT / "hadoop")
+    os.environ["HADOOP_HOME"]       = hadoop_home
+    os.environ["hadoop.home.dir"]   = hadoop_home
+    # Also needed so Spark can locate hadoop.dll at runtime
+    os.environ["PATH"] = hadoop_home + r"\bin;" + os.environ.get("PATH", "")
 
     logger.info("Initialising SparkSession with Delta Lake extensions ...")
 
