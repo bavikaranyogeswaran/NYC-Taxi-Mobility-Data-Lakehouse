@@ -1,18 +1,20 @@
 # ─────────────────────────────────────────────────────
 # NYC Taxi Mobility Data Lakehouse - Python Dependencies
+# Python 3.13 compatible versions
 # ─────────────────────────────────────────────────────
 
 # Core Compute Engine
-pyspark==3.5.1
+pyspark==3.5.4
 
 # Delta Lake integration for PySpark (must match PySpark version)
-delta-spark==3.2.0
+delta-spark==3.3.0
 
 # HTTP requests for downloading raw data files
 requests==2.32.3
 
 # Fast columnar in-memory format for Parquet read/write
-pyarrow==16.1.0
+# 18.1.0 is the first release with official Python 3.13 wheels
+pyarrow==18.1.0
 
 # In-process analytical SQL engine (used for Gold validation)
 duckdb==1.0.0
