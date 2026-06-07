@@ -1,0 +1,8 @@
+{
+    "pythonPath": ".venv/Scripts/python.exe",
+    "venvPath": ".",
+    "venv": ".venv",
+    "reportMissingImports": false,
+    "reportMissingModuleSource": false,
+    "typeCheckingMode": "basic"
+}
