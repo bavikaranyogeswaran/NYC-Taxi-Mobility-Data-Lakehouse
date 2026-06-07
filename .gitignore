@@ -1,0 +1,29 @@
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+
+# Raw and processed data (large files — not committed to Git)
+data/raw/
+data/bronze/
+data/silver/
+data/gold/
+data/quarantine/
+
+# PySpark / Java temp files
+derby.log
+metastore_db/
+spark-warehouse/
+
+# Logs
+logs/*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
