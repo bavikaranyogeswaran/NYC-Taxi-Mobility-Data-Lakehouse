@@ -78,11 +78,18 @@ def create_spark_session():
             "spark.sql.catalog.spark_catalog",
             "org.apache.spark.sql.delta.catalog.DeltaCatalog",
         )
+        # S3 / MinIO config
+        .config("spark.hadoop.fs.s3a.endpoint", "http://127.0.0.1:9000")
+        .config("spark.hadoop.fs.s3a.access.key", "minioadmin")
+        .config("spark.hadoop.fs.s3a.secret.key", "minioadmin")
+        .config("spark.hadoop.fs.s3a.path.style.access", "true")
+        .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
         .config("spark.driver.memory", "4g")
         .config("spark.log.level", "WARN")
     )
 
-    spark = configure_spark_with_delta_pip(builder).getOrCreate()
+    extra_pkgs = ["org.apache.hadoop:hadoop-aws:3.3.4", "com.amazonaws:aws-java-sdk-bundle:1.12.262"]
+    spark = configure_spark_with_delta_pip(builder, extra_packages=extra_pkgs).getOrCreate()
     spark.sparkContext.setLogLevel("WARN")
     logger.info(f"SparkSession ready  |  version={spark.version}")
     return spark
@@ -99,18 +106,16 @@ def read_bronze_trips(spark):
     (ingested_at, source_file, batch_id) are already present and any
     re-processing starts from the same trusted checkpoint.
     """
-    path = str(BRONZE_YELLOW_TAXI_PATH)
-    logger.info(f"Reading Bronze trips from: {path}")
-    df = spark.read.format("delta").load(path)
+    logger.info(f"Reading Bronze trips from: {BRONZE_YELLOW_TAXI_PATH}")
+    df = spark.read.format("delta").load(BRONZE_YELLOW_TAXI_PATH)
     logger.info(f"Bronze trips loaded: {df.count():,} rows")
     return df
 
 
 def read_bronze_zones(spark):
     """Reads the Bronze taxi_zones Delta table."""
-    path = str(BRONZE_TAXI_ZONES_PATH)
-    logger.info(f"Reading Bronze zones from: {path}")
-    df = spark.read.format("delta").load(path)
+    logger.info(f"Loading Bronze taxi zones from: {BRONZE_TAXI_ZONES_PATH}")
+    df = spark.read.format("delta").load(BRONZE_TAXI_ZONES_PATH)
     logger.info(f"Bronze zones loaded: {df.count():,} rows")
     return df
 
@@ -189,9 +194,8 @@ def quarantine_invalid_records(df, valid_condition, write_mode: str) -> int:
     logger.info(f"Invalid records found: {invalid_count:,}")
 
     if invalid_count > 0:
-        quarantine_path = str(QUARANTINE_YELLOW_TAXI_PATH)
+        quarantine_path = QUARANTINE_YELLOW_TAXI_PATH
         logger.info(f"Writing {invalid_count:,} quarantine records to: {quarantine_path}")
-        QUARANTINE_YELLOW_TAXI_PATH.mkdir(parents=True, exist_ok=True)
         (
             invalid_df.write
             .format("delta")
@@ -329,18 +333,15 @@ def enrich_with_zones(trips_df, zones_df):
 # ─────────────────────────────────────────────────────────────────────────────
 # TASK 3.11 — Write to Silver Delta table
 # ─────────────────────────────────────────────────────────────────────────────
-def save_silver(df, write_mode: str) -> None:
+def save_silver_table(df, write_mode: str) -> None:
     """
-    TASK 3.11: Writes the enriched, validated DataFrame as a Delta table
-               in data/silver/yellow_taxi/.
-
+    TASK 3.11: Writes the enriched, validated DataFrame as a Delta table.
     We select and reorder columns into the final Silver schema here so
     the output matches the specification exactly.
     """
     from pyspark.sql import functions as F
 
-    SILVER_YELLOW_TAXI_PATH.mkdir(parents=True, exist_ok=True)
-    silver_path = str(SILVER_YELLOW_TAXI_PATH)
+    logger.info("Writing clean records to Silver Delta table ...")
 
     # Select final Silver schema — drop Bronze audit cols that don't belong here
     silver_df = df.select(
@@ -385,15 +386,15 @@ def save_silver(df, write_mode: str) -> None:
         "batch_id",
     )
 
-    logger.info(f"Writing Silver table to: {silver_path}  (mode={write_mode})")
     (
         silver_df.write
         .format("delta")
         .mode(write_mode)
-        .save(silver_path)
+        .save(SILVER_YELLOW_TAXI_PATH)
     )
+
     written = silver_df.count()
-    logger.info(f"Silver write complete: {written:,} rows -> {silver_path}")
+    logger.info(f"Saved {written:,} clean rows to Silver -> {SILVER_YELLOW_TAXI_PATH}")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -442,7 +443,7 @@ def run_silver_transformation() -> None:
         final_trips = enrich_with_zones(enriched_trips, bronze_zones)
 
         # ── TASK 3.11: Write Silver Delta table ───────────────────────────────
-        save_silver(final_trips, write_mode)
+        save_silver_table(final_trips, write_mode)
 
         # ── Summary ───────────────────────────────────────────────────────────
         elapsed = (datetime.now() - start).total_seconds()

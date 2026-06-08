@@ -93,14 +93,20 @@ def create_spark_session():
             "spark.sql.catalog.spark_catalog",
             "org.apache.spark.sql.delta.catalog.DeltaCatalog",
         )
+        # S3 / MinIO config
+        .config("spark.hadoop.fs.s3a.endpoint", "http://127.0.0.1:9000")
+        .config("spark.hadoop.fs.s3a.access.key", "minioadmin")
+        .config("spark.hadoop.fs.s3a.secret.key", "minioadmin")
+        .config("spark.hadoop.fs.s3a.path.style.access", "true")
+        .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
         .config("spark.driver.memory", "4g")
-        # Suppress verbose Delta Lake / Hadoop INFO logs to keep console readable
         .config("spark.log.level", "WARN")
     )
 
     # configure_spark_with_delta_pip adds the delta-core JAR automatically
     # — no manual JAR downloads needed.
-    spark = configure_spark_with_delta_pip(builder).getOrCreate()
+    extra_pkgs = ["org.apache.hadoop:hadoop-aws:3.3.4", "com.amazonaws:aws-java-sdk-bundle:1.12.262"]
+    spark = configure_spark_with_delta_pip(builder, extra_packages=extra_pkgs).getOrCreate()
     spark.sparkContext.setLogLevel("WARN")
 
     logger.info(f"SparkSession ready  |  version={spark.version}")
@@ -186,37 +192,20 @@ def ingest_taxi_zones(spark, batch_id: str):
 # TASK 2.7 — Save Yellow Taxi DataFrame as a Delta table
 # TASK 2.8 — Save Taxi Zones DataFrame as a Delta table
 # ─────────────────────────────────────────────────────────────────────────────
-def save_as_delta(df, output_path: Path, table_name: str, write_mode: str) -> None:
-    """
-    Writes a Spark DataFrame to a Delta table on the local filesystem.
-
-    Args:
-        df          : Spark DataFrame to persist.
-        output_path : Local folder path for the Delta table files.
-        table_name  : Human-readable name used in log messages.
-        write_mode  : "overwrite" (dev) or "append" (prod).
-
-    Why Delta format over plain Parquet?
-      - Stores a transaction log (_delta_log/) alongside the data files.
-      - Supports time travel: DESCRIBE HISTORY, VERSION AS OF queries.
-      - Provides ACID guarantees — no partial writes.
-      - DuckDB and Spark can both read it directly.
-    """
-    output_path.mkdir(parents=True, exist_ok=True)
-    path_str = str(output_path)
-
-    logger.info(f"Writing {table_name} to Delta: {path_str}  (mode={write_mode})")
+def save_as_delta(df, output_path: str, table_name: str, write_mode: str) -> None:
+    """Saves DataFrame as a Delta table to the specified Bronze layer path."""
+    logger.info(f"Writing Bronze table [{table_name}] to: {output_path}  (mode={write_mode})")
 
     (
         df.write
         .format("delta")
         .mode(write_mode)
-        .save(path_str)
+        .save(output_path)
     )
 
-    # Confirm by counting what was written
+    # Confirm by counting
     written = df.count()
-    logger.info(f"Saved {table_name}: {written:,} rows -> {path_str}")
+    logger.info(f"Saved {table_name}: {written:,} rows -> {output_path}")
 
 
 # ─────────────────────────────────────────────────────────────────────────────

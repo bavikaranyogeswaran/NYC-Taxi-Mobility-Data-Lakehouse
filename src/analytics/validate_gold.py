@@ -25,8 +25,11 @@ if hasattr(sys.stdout, 'encoding') and sys.stdout.encoding and sys.stdout.encodi
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
-from config import GOLD_DIR
+from config import ROOT_DIR
 import duckdb
+
+# Build a local Path to the Gold layer (DuckDB reads from local filesystem)
+_LOCAL_GOLD_DIR = ROOT_DIR / "data" / "gold"
 
 def run_validation():
     print("=" * 70)
@@ -40,10 +43,10 @@ def run_validation():
     # On Windows, delta_scan can sometimes fail to parse the _delta_log directory.
     
     # Paths to the Gold Delta tables (pointing to the Parquet data files)
-    daily_revenue_path = (GOLD_DIR / "daily_revenue_by_zone" / "*.parquet").resolve().as_posix()
-    hourly_perf_path = (GOLD_DIR / "hourly_performance" / "*.parquet").resolve().as_posix()
-    route_summary_path = (GOLD_DIR / "route_summary" / "*.parquet").resolve().as_posix()
-    dq_summary_path = (GOLD_DIR / "data_quality_summary" / "*.parquet").resolve().as_posix()
+    daily_revenue_path = (_LOCAL_GOLD_DIR / "daily_revenue_by_zone" / "*.parquet").resolve().as_posix()
+    hourly_perf_path = (_LOCAL_GOLD_DIR / "hourly_performance" / "*.parquet").resolve().as_posix()
+    route_summary_path = (_LOCAL_GOLD_DIR / "route_summary" / "*.parquet").resolve().as_posix()
+    dq_summary_path = (_LOCAL_GOLD_DIR / "data_quality_summary" / "*.parquet").resolve().as_posix()
     
     print("\n[2/3] Querying Gold Data Marts directly from disk...")
     

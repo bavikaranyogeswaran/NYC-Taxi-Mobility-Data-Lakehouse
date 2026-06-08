@@ -75,11 +75,18 @@ def create_spark_session():
             "spark.sql.catalog.spark_catalog",
             "org.apache.spark.sql.delta.catalog.DeltaCatalog",
         )
+        # S3 / MinIO config
+        .config("spark.hadoop.fs.s3a.endpoint", "http://127.0.0.1:9000")
+        .config("spark.hadoop.fs.s3a.access.key", "minioadmin")
+        .config("spark.hadoop.fs.s3a.secret.key", "minioadmin")
+        .config("spark.hadoop.fs.s3a.path.style.access", "true")
+        .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
         .config("spark.driver.memory", "4g")
         .config("spark.log.level", "WARN")
     )
 
-    spark = configure_spark_with_delta_pip(builder).getOrCreate()
+    extra_pkgs = ["org.apache.hadoop:hadoop-aws:3.3.4", "com.amazonaws:aws-java-sdk-bundle:1.12.262"]
+    spark = configure_spark_with_delta_pip(builder, extra_packages=extra_pkgs).getOrCreate()
     spark.sparkContext.setLogLevel("WARN")
     logger.info(f"SparkSession ready  |  version={spark.version}")
     return spark
@@ -90,7 +97,7 @@ def create_spark_session():
 # ─────────────────────────────────────────────────────────────────────────────
 def read_silver_trips(spark):
     """Reads the clean Silver Delta table as the source of truth."""
-    path = str(SILVER_YELLOW_TAXI_PATH)
+    path = SILVER_YELLOW_TAXI_PATH
     logger.info(f"Reading Silver trips from: {path}")
     df = spark.read.format("delta").load(path)
     logger.info(f"Silver records loaded: {df.count():,}")
@@ -189,7 +196,7 @@ def aggregate_route_summary(df):
             F.avg("trip_distance").alias("avg_distance"),
             F.avg("fare_amount").alias("avg_fare")
         )
-        .filter(F.col("pickup_zone").isNotNull() & F.col("dropoff_zone").isNotNull())
+        .filter(F.col("pickup_zone").isNotNull() & (F.col("dropoff_zone").isNotNull()))
         .orderBy(F.desc("total_trips"))
     )
     return agg_df
@@ -206,8 +213,8 @@ def aggregate_dq_summary(spark):
     
     logger.info("Aggregating data quality summary ...")
     
-    silver_df = spark.read.format("delta").load(str(SILVER_YELLOW_TAXI_PATH))
-    quarantine_df = spark.read.format("delta").load(str(QUARANTINE_YELLOW_TAXI_PATH))
+    silver_df = spark.read.format("delta").load(SILVER_YELLOW_TAXI_PATH)
+    quarantine_df = spark.read.format("delta").load(QUARANTINE_YELLOW_TAXI_PATH)
     
     # Get daily valid counts
     valid_daily = (
@@ -233,9 +240,7 @@ def aggregate_dq_summary(spark):
 # ─────────────────────────────────────────────────────────────────────────────
 def save_gold_table(df, folder_name: str, table_name: str, write_mode: str):
     """Saves an aggregated DataFrame as a Delta table in the Gold layer."""
-    output_path = GOLD_DIR / folder_name
-    output_path.mkdir(parents=True, exist_ok=True)
-    path_str = str(output_path)
+    path_str = f"{GOLD_DIR}/{folder_name}"
 
     logger.info(f"Writing Gold table [{table_name}] to: {path_str}  (mode={write_mode})")
 

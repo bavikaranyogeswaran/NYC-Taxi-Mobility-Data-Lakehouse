@@ -14,35 +14,47 @@ from pathlib import Path
 # ── Root project directory (the folder that contains this file) ──────────────
 ROOT_DIR = Path(__file__).resolve().parent.parent
 
-# ── Local storage paths ───────────────────────────────────────────────────────
+# ── MinIO / S3 Configuration ─────────────────────────────────────────────────
+USE_MINIO = True
+
+if USE_MINIO:
+    # Use s3a:// protocol for Spark to write to MinIO
+    LAKEHOUSE_ROOT = "s3a://lakehouse"
+else:
+    # Use local filesystem
+    LAKEHOUSE_ROOT = str(ROOT_DIR / "data")
+
+# ── Local storage paths (always local) ───────────────────────────────────────
 DATA_DIR       = ROOT_DIR / "data"
 RAW_DIR        = DATA_DIR / "raw"
-BRONZE_DIR     = DATA_DIR / "bronze"
-SILVER_DIR     = DATA_DIR / "silver"
-GOLD_DIR       = DATA_DIR / "gold"
-QUARANTINE_DIR = DATA_DIR / "quarantine"
 LOGS_DIR       = ROOT_DIR / "logs"
+
+# ── Lakehouse layer paths (S3 or local depending on USE_MINIO) ───────────────
+BRONZE_DIR     = f"{LAKEHOUSE_ROOT}/bronze"
+SILVER_DIR     = f"{LAKEHOUSE_ROOT}/silver"
+GOLD_DIR       = f"{LAKEHOUSE_ROOT}/gold"
+QUARANTINE_DIR = f"{LAKEHOUSE_ROOT}/quarantine"
 
 # ── Raw sub-paths ─────────────────────────────────────────────────────────────
 RAW_YELLOW_TAXI_DIR = RAW_DIR / "yellow_taxi"
 RAW_TAXI_ZONES_DIR  = RAW_DIR / "taxi_zones"
 
 # ── Bronze sub-paths ──────────────────────────────────────────────────────────
-BRONZE_YELLOW_TAXI_PATH = BRONZE_DIR / "yellow_taxi"
-BRONZE_TAXI_ZONES_PATH  = BRONZE_DIR / "taxi_zones"
+BRONZE_YELLOW_TAXI_PATH = f"{BRONZE_DIR}/yellow_taxi"
+BRONZE_TAXI_ZONES_PATH  = f"{BRONZE_DIR}/taxi_zones"
 
 # ── Silver sub-paths ──────────────────────────────────────────────────────────
-SILVER_YELLOW_TAXI_PATH = SILVER_DIR / "yellow_taxi"
+SILVER_YELLOW_TAXI_PATH = f"{SILVER_DIR}/yellow_taxi"
 
 # ── Gold sub-paths ────────────────────────────────────────────────────────────
-GOLD_DAILY_SUMMARY_PATH  = GOLD_DIR / "daily_summary"
-GOLD_HOURLY_DEMAND_PATH  = GOLD_DIR / "hourly_demand"
-GOLD_ZONE_REVENUE_PATH   = GOLD_DIR / "zone_revenue"
-GOLD_ROUTE_SUMMARY_PATH  = GOLD_DIR / "route_summary"
-GOLD_DQ_METRICS_PATH     = GOLD_DIR / "dq_metrics"
+GOLD_DAILY_SUMMARY_PATH  = f"{GOLD_DIR}/daily_summary"
+GOLD_HOURLY_DEMAND_PATH  = f"{GOLD_DIR}/hourly_demand"
+GOLD_ZONE_REVENUE_PATH   = f"{GOLD_DIR}/zone_revenue"
+GOLD_ROUTE_SUMMARY_PATH  = f"{GOLD_DIR}/route_summary"
+GOLD_DQ_METRICS_PATH     = f"{GOLD_DIR}/dq_metrics"
 
 # ── Quarantine sub-paths ──────────────────────────────────────────────────────
-QUARANTINE_YELLOW_TAXI_PATH = QUARANTINE_DIR / "yellow_taxi"
+QUARANTINE_YELLOW_TAXI_PATH = f"{QUARANTINE_DIR}/yellow_taxi"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # NYC TLC Dataset Download URLs
