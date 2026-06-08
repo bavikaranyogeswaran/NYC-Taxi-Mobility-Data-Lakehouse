@@ -10,6 +10,8 @@ dashboard consumption (e.g., Superset).
 Gold Data Marts produced:
   1. gold_daily_revenue_by_zone : Revenue & trip volumes aggregated by day and pickup zone.
   2. gold_hourly_performance    : Avg duration, avg distance, and avg speed by hour of day.
+  3. gold_route_summary         : Top pickup-to-dropoff routes by volume.
+  4. gold_data_quality_summary  : Daily invalid rates from the quarantine table.
 
 Usage:
     python src/pipeline/gold_aggregation.py
@@ -28,6 +30,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 from config import (
     SILVER_YELLOW_TAXI_PATH,
+    QUARANTINE_YELLOW_TAXI_PATH,
     GOLD_DIR,
     LOGS_DIR,
     PIPELINE_SETTINGS,
@@ -168,6 +171,64 @@ def aggregate_hourly_performance(df):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# TASK 4.6 — Aggregate: Route Summary
+# ─────────────────────────────────────────────────────────────────────────────
+def aggregate_route_summary(df):
+    """
+    Creates a data mart answering:
+      "What are the most popular routes between zones?"
+    """
+    from pyspark.sql import functions as F
+
+    logger.info("Aggregating route summary ...")
+
+    agg_df = (
+        df.groupBy("pickup_zone", "dropoff_zone")
+        .agg(
+            F.count("*").alias("total_trips"),
+            F.avg("trip_distance").alias("avg_distance"),
+            F.avg("fare_amount").alias("avg_fare")
+        )
+        .filter(F.col("pickup_zone").isNotNull() & F.col("dropoff_zone").isNotNull())
+        .orderBy(F.desc("total_trips"))
+    )
+    return agg_df
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TASK 4.7 — Aggregate: Data Quality Summary
+# ─────────────────────────────────────────────────────────────────────────────
+def aggregate_dq_summary(spark):
+    """
+    Reads from Quarantine and Silver to provide a high-level summary
+    of data quality over time.
+    """
+    from pyspark.sql import functions as F
+    
+    logger.info("Aggregating data quality summary ...")
+    
+    silver_df = spark.read.format("delta").load(str(SILVER_YELLOW_TAXI_PATH))
+    quarantine_df = spark.read.format("delta").load(str(QUARANTINE_YELLOW_TAXI_PATH))
+    
+    # Get daily valid counts
+    valid_daily = (
+        silver_df.groupBy("pickup_date")
+        .agg(F.count("*").alias("valid_records"))
+        .withColumnRenamed("pickup_date", "dq_date")
+    )
+    
+    # Get daily invalid counts (using ingested_at since bad records might have null dates)
+    invalid_daily = (
+        quarantine_df.withColumn("dq_date", F.to_date("ingested_at"))
+        .groupBy("dq_date", "dq_fail_reason")
+        .agg(F.count("*").alias("invalid_records"))
+    )
+    
+    # Join them
+    dq_summary = invalid_daily.join(valid_daily, "dq_date", "full_outer")
+    
+    return dq_summary
+
+# ─────────────────────────────────────────────────────────────────────────────
 # TASK 4.5 — Save Gold Tables
 # ─────────────────────────────────────────────────────────────────────────────
 def save_gold_table(df, folder_name: str, table_name: str, write_mode: str):
@@ -223,6 +284,24 @@ def run_gold_aggregation() -> None:
             df=hourly_performance_df,
             folder_name="hourly_performance",
             table_name="gold_hourly_performance",
+            write_mode=write_mode,
+        )
+
+        # Task 4.6
+        route_summary_df = aggregate_route_summary(silver_df)
+        save_gold_table(
+            df=route_summary_df,
+            folder_name="route_summary",
+            table_name="gold_route_summary",
+            write_mode=write_mode,
+        )
+        
+        # Task 4.7
+        dq_summary_df = aggregate_dq_summary(spark)
+        save_gold_table(
+            df=dq_summary_df,
+            folder_name="data_quality_summary",
+            table_name="gold_data_quality_summary",
             write_mode=write_mode,
         )
 
