@@ -1,0 +1,158 @@
+version: '3.8'
+
+x-airflow-common:
+  &airflow-common
+  image: apache/airflow:2.8.1-python3.10
+  environment:
+    - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+    - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+    - AIRFLOW__CORE__LOAD_EXAMPLES=false
+    - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=true
+    - AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.basic_auth
+    - AWS_ACCESS_KEY_ID=minioadmin
+    - AWS_SECRET_ACCESS_KEY=minioadmin
+    - AWS_DEFAULT_REGION=us-east-1
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./src:/opt/airflow/src
+    - ./data:/opt/airflow/data  # Temporary mount so Airflow can see local data before we move fully to MinIO
+    - ./hadoop:/opt/airflow/hadoop
+    - ./logs:/opt/airflow/logs
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+x-superset-common:
+  &superset-common
+  image: apache/superset:3.0.3
+  environment:
+    - SUPERSET_SECRET_KEY=s0m3_s3cr3t_k3y_for_superset_12345
+    - SUPERSET_SQLALCHEMY_DATABASE_URI=postgresql+psycopg2://superset:superset@postgres/superset
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # METADATA DATABASE (Shared by Airflow and Superset)
+  # ─────────────────────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+      # Init script to create multiple databases
+      - ./docker/postgres-init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # STORAGE: MinIO (S3-compatible Object Storage)
+  # ─────────────────────────────────────────────────────────────────────────────
+  minio:
+    image: minio/minio:RELEASE.2023-11-20T22-40-07Z
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    ports:
+      - "9000:9000"  # API port
+      - "9001:9001"  # Console UI port
+    volumes:
+      - minio-data-volume:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      retries: 5
+
+  # Task 6.3 Automation: Auto-create the 'lakehouse' bucket on startup
+  minio-init:
+    image: minio/mc:RELEASE.2023-11-20T16-30-59Z
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      mc alias set local_minio http://minio:9000 minioadmin minioadmin;
+      mc mb local_minio/lakehouse || true;
+      mc anonymous set public local_minio/lakehouse;
+      echo 'Bucket lakehouse created!';
+      "
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # ORCHESTRATION: Apache Airflow
+  # ─────────────────────────────────────────────────────────────────────────────
+  airflow-init:
+    <<: *airflow-common
+    command: version
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - _AIRFLOW_DB_UPGRADE=true
+      - _AIRFLOW_WWW_USER_CREATE=true
+      - _AIRFLOW_WWW_USER_USERNAME=admin
+      - _AIRFLOW_WWW_USER_PASSWORD=admin
+      - _AIRFLOW_WWW_USER_EMAIL=admin@lakehouse.local
+      - _AIRFLOW_WWW_USER_ROLE=Admin
+
+  airflow-webserver:
+    <<: *airflow-common
+    command: webserver
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # DASHBOARDING: Apache Superset
+  # ─────────────────────────────────────────────────────────────────────────────
+  superset-init:
+    <<: *superset-common
+    command: >
+      /bin/sh -c "
+      superset fab create-admin --username admin --firstname Superset --lastname Admin --email admin@lakehouse.local --password admin &&
+      superset db upgrade &&
+      superset init
+      "
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  superset:
+    <<: *superset-common
+    command: "gunicorn -w 2 --timeout 120 -b  0.0.0.0:8088 --limit-request-line 0 --limit-request-field_size 0 'superset.app:create_app()'"
+    ports:
+      - "8088:8088"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      superset-init:
+        condition: service_completed_successfully
+
+volumes:
+  postgres-db-volume:
+  minio-data-volume:
