@@ -2,7 +2,10 @@ version: '3.8'
 
 x-airflow-common:
   &airflow-common
-  image: apache/airflow:2.8.1-python3.10
+  build:
+    context: .
+    dockerfile: Dockerfile.airflow
+  image: local_airflow_pyspark:latest
   environment:
     - AIRFLOW__CORE__EXECUTOR=LocalExecutor
     - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow

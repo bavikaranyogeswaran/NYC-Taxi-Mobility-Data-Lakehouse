@@ -196,7 +196,7 @@ def aggregate_route_summary(df):
             F.avg("trip_distance").alias("avg_distance"),
             F.avg("fare_amount").alias("avg_fare")
         )
-        .filter(F.col("pickup_zone").isNotNull() & (F.col("dropoff_zone").isNotNull()))
+        .where("pickup_zone IS NOT NULL AND dropoff_zone IS NOT NULL")
         .orderBy(F.desc("total_trips"))
     )
     return agg_df
