@@ -66,20 +66,15 @@ services:
       - "9001:9001"  # Console UI port
     volumes:
       - minio-data-volume:/data
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 10s
-      retries: 5
 
   # Task 6.3 Automation: Auto-create the 'lakehouse' bucket on startup
   minio-init:
     image: minio/mc:RELEASE.2023-11-20T16-30-59Z
     depends_on:
-      minio:
-        condition: service_healthy
+      - minio
     entrypoint: >
       /bin/sh -c "
-      sleep 5;
+      sleep 10;
       mc alias set local_minio http://minio:9000 minioadmin minioadmin;
       mc mb local_minio/lakehouse || true;
       mc anonymous set public local_minio/lakehouse;
