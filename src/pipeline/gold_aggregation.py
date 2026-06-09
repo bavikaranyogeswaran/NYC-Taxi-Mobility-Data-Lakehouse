@@ -229,14 +229,20 @@ def save_gold_table(df, folder_name: str, table_name: str, write_mode: str):
 # ─────────────────────────────────────────────────────────────────────────────
 def save_gold_to_postgres(df, table_name: str, write_mode: str):
     """Pushes Gold Data Marts to Postgres so the FastAPI backend can serve them."""
-    # If running inside Airflow Docker, host is 'postgres', else '127.0.0.1'
-    pg_host = os.environ.get("POSTGRES_HOST", "127.0.0.1")
-    url = f"jdbc:postgresql://{pg_host}:5432/lakehouse"
+    pg_host = os.environ.get("PG_HOST", "127.0.0.1")
+    pg_port = os.environ.get("PG_PORT", "5432")
+    pg_db   = os.environ.get("PG_DB", "lakehouse")
+    pg_user = os.environ.get("PG_USER")
+    pg_pass = os.environ.get("PG_PASS")
+
+    if not pg_user or not pg_pass:
+        raise EnvironmentError("PG_USER and PG_PASS environment variables must be set")
+
+    url = f"jdbc:postgresql://{pg_host}:{pg_port}/{pg_db}"
     properties = {
-        "user": "lakehouse",
-        "password": "lakehouse",
+        "user": pg_user,
+        "password": pg_pass,
         "driver": "org.postgresql.Driver",
-        # Use stringtype=unspecified to avoid strict typing errors
         "stringtype": "unspecified"
     }
 

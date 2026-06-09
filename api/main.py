@@ -18,9 +18,12 @@ app.add_middleware(
 # Connect to the local Postgres database where Gold data is loaded
 PG_HOST = os.environ.get("PG_HOST", "127.0.0.1")
 PG_PORT = os.environ.get("PG_PORT", "5432")
-PG_DB = os.environ.get("PG_DB", "lakehouse")
-PG_USER = os.environ.get("PG_USER", "lakehouse")
-PG_PASS = os.environ.get("PG_PASS", "lakehouse")
+PG_DB   = os.environ.get("PG_DB", "lakehouse")
+PG_USER = os.environ.get("PG_USER")
+PG_PASS = os.environ.get("PG_PASS")
+
+if not PG_USER or not PG_PASS:
+    raise EnvironmentError("PG_USER and PG_PASS environment variables must be set")
 
 def get_db_connection():
     try:

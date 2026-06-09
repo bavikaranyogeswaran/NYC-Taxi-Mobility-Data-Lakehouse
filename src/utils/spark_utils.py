@@ -32,9 +32,12 @@ _EXTRA_PACKAGES = [
 ]
 
 # S3 / MinIO endpoint: inside Docker it's the service name, locally it's 127.0.0.1
-_MINIO_ENDPOINT = os.environ.get("MINIO_ENDPOINT", "http://127.0.0.1:9000")
-_MINIO_ACCESS_KEY = os.environ.get("AWS_ACCESS_KEY_ID", "minioadmin")
-_MINIO_SECRET_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", "minioadmin")
+_MINIO_ENDPOINT   = os.environ.get("MINIO_ENDPOINT", "http://127.0.0.1:9000")
+_MINIO_ACCESS_KEY = os.environ.get("AWS_ACCESS_KEY_ID")
+_MINIO_SECRET_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+
+if not _MINIO_ACCESS_KEY or not _MINIO_SECRET_KEY:
+    raise EnvironmentError("AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables must be set")
 
 
 def create_spark_session(app_name: str):

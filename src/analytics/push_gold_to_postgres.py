@@ -18,17 +18,21 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
+import os
 import duckdb
 import psycopg2
 import psycopg2.extras
 import datetime
 
 # ── Postgres connection ───────────────────────────────────────────────────────
-PG_HOST = "127.0.0.1"
-PG_PORT = 5432
-PG_DB   = "lakehouse"
-PG_USER = "lakehouse"
-PG_PASS = "lakehouse"
+PG_HOST = os.environ.get("PG_HOST", "127.0.0.1")
+PG_PORT = int(os.environ.get("PG_PORT", "5432"))
+PG_DB   = os.environ.get("PG_DB", "lakehouse")
+PG_USER = os.environ.get("PG_USER")
+PG_PASS = os.environ.get("PG_PASS")
+
+if not PG_USER or not PG_PASS:
+    raise EnvironmentError("PG_USER and PG_PASS environment variables must be set")
 
 # ── Gold parquet folders ──────────────────────────────────────────────────────
 GOLD_BASE = PROJECT_ROOT / "data" / "gold"
@@ -123,7 +127,7 @@ def main():
     con_pg.close()
     con_duckdb.close()
     print("\nDone -- all Gold tables are now in Postgres!")
-    print(f"  Lakehouse DB: postgresql+psycopg2://{PG_USER}:{PG_PASS}@{PG_HOST}/{PG_DB}")
+    print(f"  Lakehouse DB: postgresql+psycopg2://{PG_USER}:***@{PG_HOST}/{PG_DB}")
 
 
 if __name__ == "__main__":
