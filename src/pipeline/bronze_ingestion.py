@@ -21,7 +21,6 @@ Usage:
 
 import sys
 import uuid
-import logging
 from pathlib import Path
 from datetime import datetime
 
@@ -37,31 +36,16 @@ from config import (
     LOGS_DIR,
     PIPELINE_SETTINGS,
 )
+from utils.logging_utils import get_logger
+from utils.metrics_utils import push_metrics
 
-# ── Logging setup ─────────────────────────────────────────────────────────────
-LOGS_DIR.mkdir(parents=True, exist_ok=True)
-log_file = LOGS_DIR / "bronze_ingestion.log"
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s  [%(levelname)s]  %(message)s",
-    handlers=[
-        logging.FileHandler(log_file, encoding="utf-8"),
-        logging.StreamHandler(sys.stdout),
-    ],
-)
-logger = logging.getLogger(__name__)
+log = get_logger(__name__, LOGS_DIR / "bronze_ingestion.log")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # TASK 2.2 — Initialize SparkSession with Delta Lake extensions
 # ─────────────────────────────────────────────────────────────────────────────
 def create_spark_session():
-    """
-    Boots a local PySpark session with Delta Lake support.
-    Delegates to the shared spark_utils factory which auto-detects
-    pre-baked Docker JARs vs. local Ivy resolution.
-    """
     from utils.spark_utils import create_spark_session as _create
     return _create("NYC_Taxi_Bronze_Ingestion")
 
@@ -70,66 +54,41 @@ def create_spark_session():
 # TASK 2.3 – 2.6 — Load raw files and append audit metadata
 # ─────────────────────────────────────────────────────────────────────────────
 def ingest_yellow_taxi(spark, batch_id: str):
-    """
-    TASK 2.3 : Reads all Yellow Taxi Parquet files from data/raw/yellow_taxi/
-               into a single Spark DataFrame.
-    TASK 2.4 : Appends ingested_at — exact timestamp when this batch ran.
-    TASK 2.5 : Appends source_file — the name of the raw file each row came from.
-    TASK 2.6 : Appends batch_id   — groups all rows ingested in the same run.
-
-    Why we keep ALL columns and ALL rows (including bad records):
-      Bronze is the audit layer. Any filtering happens in Silver.
-      If Silver has a bug, we can always re-derive it from Bronze without
-      going back to the original download.
-    """
     from pyspark.sql import functions as F
 
     raw_path = str(RAW_YELLOW_TAXI_DIR / "*.parquet")
-    logger.info(f"Reading raw Parquet files from: {raw_path}")
+    log.info("reading_raw_files", table="yellow_taxi", path=raw_path)
 
-    # TASK 2.3: Load raw Parquet — Spark reads all 3 monthly files as one DataFrame
     df = spark.read.parquet(raw_path)
-
     raw_count = df.count()
-    logger.info(f"Raw records loaded: {raw_count:,}")
+    log.info("data_loaded", source="raw_parquet", table="yellow_taxi", record_count=raw_count)
 
-    # TASK 2.4: ingested_at — when did this row enter the lakehouse?
     df = df.withColumn("ingested_at", F.current_timestamp())
-
-    # TASK 2.5: source_file — which Parquet file did this row come from?
-    # input_file_name() returns the full path; basename() extracts just the filename.
     df = df.withColumn(
         "source_file",
         F.element_at(F.split(F.input_file_name(), "/"), -1),
     )
-
-    # TASK 2.6: batch_id — unique ID for this pipeline run
-    # Every row ingested in the same execution gets the same batch_id.
-    # This lets us query "show me everything from run X" for debugging.
     df = df.withColumn("batch_id", F.lit(batch_id))
 
-    logger.info(f"Audit columns added: ingested_at, source_file, batch_id={batch_id}")
+    log.info("audit_columns_added", batch_id=batch_id)
     return df
 
 
 def ingest_taxi_zones(spark, batch_id: str):
-    """
-    Reads the Taxi Zone Lookup CSV into a Spark DataFrame and appends
-    the same audit metadata columns for consistency across all Bronze tables.
-    """
     from pyspark.sql import functions as F
 
     zone_path = str(RAW_TAXI_ZONES_DIR / "taxi_zone_lookup.csv")
-    logger.info(f"Reading taxi zone CSV from: {zone_path}")
+    log.info("reading_raw_files", table="taxi_zones", path=zone_path)
 
     df = (
         spark.read
-        .option("header", "true")       # first row is the column header
-        .option("inferSchema", "true")  # auto-detect int vs string types
+        .option("header", "true")
+        .option("inferSchema", "true")
         .csv(zone_path)
     )
 
-    logger.info(f"Zone records loaded: {df.count():,}")
+    zone_count = df.count()
+    log.info("data_loaded", source="taxi_zone_csv", table="taxi_zones", record_count=zone_count)
 
     df = (
         df
@@ -137,7 +96,6 @@ def ingest_taxi_zones(spark, batch_id: str):
         .withColumn("source_file", F.lit("taxi_zone_lookup.csv"))
         .withColumn("batch_id",    F.lit(batch_id))
     )
-
     return df
 
 
@@ -145,58 +103,35 @@ def ingest_taxi_zones(spark, batch_id: str):
 # TASK 2.7 — Save Yellow Taxi DataFrame as a Delta table
 # TASK 2.8 — Save Taxi Zones DataFrame as a Delta table
 # ─────────────────────────────────────────────────────────────────────────────
-def save_as_delta(df, output_path: str, table_name: str, write_mode: str) -> None:
-    """Saves DataFrame as a Delta table to the specified Bronze layer path."""
-    logger.info(f"Writing Bronze table [{table_name}] to: {output_path}  (mode={write_mode})")
-
-    (
-        df.write
-        .format("delta")
-        .mode(write_mode)
-        .save(output_path)
-    )
-
-    # Confirm by counting
+def save_as_delta(df, output_path: str, table_name: str, write_mode: str) -> int:
+    log.info("writing_table", table=table_name, path=output_path, mode=write_mode)
+    df.write.format("delta").mode(write_mode).save(output_path)
     written = df.count()
-    logger.info(f"Saved {table_name}: {written:,} rows -> {output_path}")
+    log.info("data_written", table=table_name, record_count=written, path=output_path)
+    return written
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Main pipeline runner
 # ─────────────────────────────────────────────────────────────────────────────
 def run_bronze_ingestion() -> None:
-    """
-    Orchestrates the full Bronze ingestion:
-      1. Start Spark
-      2. Load + enrich Yellow Taxi data
-      3. Load + enrich Taxi Zone data
-      4. Write both as Delta tables
-    """
     start = datetime.now()
     write_mode = PIPELINE_SETTINGS["delta_write_mode"]
-
-    # Unique ID for this entire pipeline run
     batch_id = f"batch_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}"
 
-    logger.info("=" * 60)
-    logger.info("NYC Taxi Lakehouse — Bronze Ingestion")
-    logger.info(f"Batch ID  : {batch_id}")
-    logger.info(f"Write mode: {write_mode}")
-    logger.info("=" * 60)
+    log.info("stage_start", stage="bronze", batch_id=batch_id, write_mode=write_mode)
 
     spark = create_spark_session()
 
     try:
-        # ── Yellow Taxi trips (Tasks 2.3 – 2.7) ──────────────────────────────
         yellow_df = ingest_yellow_taxi(spark, batch_id)
-        save_as_delta(
+        rows_written = save_as_delta(
             df=yellow_df,
             output_path=BRONZE_YELLOW_TAXI_PATH,
             table_name="bronze_yellow_taxi_trips",
             write_mode=write_mode,
         )
 
-        # ── Taxi Zone lookup (Tasks 2.3 – 2.8) ───────────────────────────────
         zones_df = ingest_taxi_zones(spark, batch_id)
         save_as_delta(
             df=zones_df,
@@ -206,13 +141,17 @@ def run_bronze_ingestion() -> None:
         )
 
         elapsed = (datetime.now() - start).total_seconds()
-        logger.info("=" * 60)
-        logger.info(f"Bronze ingestion complete in {elapsed:.1f}s")
-        logger.info("=" * 60)
+        log.info("stage_complete", stage="bronze", duration_seconds=round(elapsed, 1))
+
+        push_metrics(
+            "bronze_ingestion",
+            bronze_rows_written=rows_written,
+            bronze_duration_seconds=elapsed,
+        )
 
     finally:
         spark.stop()
-        logger.info("SparkSession stopped.")
+        log.info("spark_stopped", stage="bronze")
 
 
 # ─────────────────────────────────────────────────────────────────────────────

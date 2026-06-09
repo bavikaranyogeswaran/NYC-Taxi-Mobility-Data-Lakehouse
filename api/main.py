@@ -1,21 +1,27 @@
+import logging
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from prometheus_fastapi_instrumentator import Instrumentator
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from datetime import datetime, timezone
 import os
 
+log = logging.getLogger("api")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+
 app = FastAPI(title="NYC Taxi Lakehouse API")
 
-# Allow React app on localhost
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For dev, allow all
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+Instrumentator().instrument(app).expose(app)
 
 # Connect to the local Postgres database where Gold data is loaded
 PG_HOST = os.environ.get("PG_HOST", "127.0.0.1")
@@ -35,7 +41,7 @@ def get_db_connection():
         )
         return conn
     except Exception as e:
-        print(f"Error connecting to Postgres: {e}")
+        log.error("db_connection_failed error=%s", e)
         return None
 
 @app.get("/health")
@@ -44,12 +50,15 @@ def health():
     ts = datetime.now(timezone.utc).isoformat()
     if conn:
         conn.close()
+        log.info("GET /health status=ok")
         return {"status": "ok", "db": "ok", "ts": ts}
+    log.warning("GET /health status=degraded db=unavailable")
     return JSONResponse(status_code=503, content={"status": "degraded", "db": "unavailable", "ts": ts})
 
 
 @app.get("/api/overview")
 def get_overview():
+    log.info("GET /api/overview")
     conn = get_db_connection()
     if not conn:
         raise HTTPException(status_code=500, detail="Database connection failed")
@@ -84,6 +93,7 @@ def get_overview():
 
 @app.get("/api/demand")
 def get_demand_analysis():
+    log.info("GET /api/demand")
     conn = get_db_connection()
     if not conn:
         raise HTTPException(status_code=500, detail="Database connection failed")
@@ -101,6 +111,7 @@ def get_demand_analysis():
 
 @app.get("/api/locations")
 def get_location_analysis():
+    log.info("GET /api/locations")
     conn = get_db_connection()
     if not conn:
         raise HTTPException(status_code=500, detail="Database connection failed")

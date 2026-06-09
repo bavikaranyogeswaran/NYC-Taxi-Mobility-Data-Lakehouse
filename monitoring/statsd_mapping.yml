@@ -1,0 +1,25 @@
+mappings:
+  - match: "airflow.dag.*.*.duration"
+    name: "airflow_dag_duration_seconds"
+    labels:
+      dag_id: "$1"
+      task_id: "$2"
+
+  - match: "airflow.task_instance.*.*.*.duration"
+    name: "airflow_task_duration_seconds"
+    labels:
+      dag_id: "$1"
+      task_id: "$2"
+      run_id: "$3"
+
+  - match: "airflow.scheduler.tasks.running"
+    name: "airflow_scheduler_tasks_running"
+
+  - match: "airflow.scheduler.tasks.starving"
+    name: "airflow_scheduler_tasks_starving"
+
+  - match: "airflow.dagrun.*.*.first_task_scheduling_delay"
+    name: "airflow_dagrun_first_task_scheduling_delay_seconds"
+    labels:
+      dag_id: "$1"
+      run_type: "$2"

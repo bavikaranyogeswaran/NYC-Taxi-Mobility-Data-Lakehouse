@@ -1,0 +1,20 @@
+groups:
+  - name: pipeline_alerts
+    rules:
+      - alert: SilverHighDQFailureRate
+        expr: silver_invalid_rate_pct > 10
+        annotations:
+          summary: "Silver DQ failure rate {{ $value }}% exceeds 10%"
+
+      - alert: PipelineStageTooSlow
+        expr: silver_duration_seconds > 3600
+        annotations:
+          summary: "Silver stage took {{ $value }}s — over 1 hour"
+
+  - name: api_alerts
+    rules:
+      - alert: APIHighP95Latency
+        expr: http_request_duration_seconds{quantile="0.95"} > 2.0
+        for: 5m
+        annotations:
+          summary: "API p95 latency {{ $value }}s exceeds 2s SLA"

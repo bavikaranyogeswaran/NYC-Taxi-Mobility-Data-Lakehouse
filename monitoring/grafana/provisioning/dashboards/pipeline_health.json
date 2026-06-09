@@ -1,0 +1,104 @@
+{
+  "title": "Pipeline Health",
+  "uid": "pipeline-health",
+  "schemaVersion": 39,
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Stage Duration (seconds)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "bronze_duration_seconds",
+          "legendFormat": "bronze"
+        },
+        {
+          "datasource": "Prometheus",
+          "expr": "silver_duration_seconds",
+          "legendFormat": "silver"
+        },
+        {
+          "datasource": "Prometheus",
+          "expr": "gold_duration_seconds",
+          "legendFormat": "gold"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Silver DQ Failure Rate (%)",
+      "type": "gauge",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "red", "value": 10 }
+            ]
+          },
+          "max": 100,
+          "unit": "percent"
+        }
+      },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "silver_invalid_rate_pct"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Row Counts by Stage",
+      "type": "bargauge",
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "bronze_rows_written",
+          "legendFormat": "bronze rows"
+        },
+        {
+          "datasource": "Prometheus",
+          "expr": "silver_valid_rows",
+          "legendFormat": "silver valid"
+        },
+        {
+          "datasource": "Prometheus",
+          "expr": "gold_daily_summary_rows",
+          "legendFormat": "gold daily summary"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Silver Invalid Rows",
+      "type": "stat",
+      "gridPos": { "x": 12, "y": 8, "w": 6, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1000 }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "silver_invalid_rows"
+        }
+      ]
+    }
+  ]
+}
