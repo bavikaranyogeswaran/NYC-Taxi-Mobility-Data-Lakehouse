@@ -27,6 +27,15 @@ logs/
 .DS_Store
 Thumbs.db
 
+# Frontend build artifacts and dependencies
+node_modules/
+frontend/dist/
+frontend/.vite/
+src/frontend/
+
+# Python virtual environments
+.venv/
+
 # IDE
 .vscode/
 .idea/

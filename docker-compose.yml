@@ -119,11 +119,28 @@ services:
         condition: service_completed_successfully
 
   # ─────────────────────────────────────────────────────────────────────────────
+  # API: FastAPI backend (queries PostgreSQL gold tables)
+  # ─────────────────────────────────────────────────────────────────────────────
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PG_HOST=postgres
+      - PG_PORT=5432
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────────────────────────────────────
   # FRONTEND: React + Vite dashboard (served by nginx)
   # ─────────────────────────────────────────────────────────────────────────────
   frontend:
     build:
-      context: ./src/frontend
+      context: ./frontend
       dockerfile: Dockerfile
     ports:
       - "5173:80"
