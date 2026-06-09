@@ -34,6 +34,8 @@ x-superset-common:
   environment:
     - SUPERSET_SECRET_KEY=s0m3_s3cr3t_k3y_for_superset_12345
     - SUPERSET_SQLALCHEMY_DATABASE_URI=postgresql+psycopg2://superset:superset@postgres/superset
+  volumes:
+    - ./docker/superset_config.py:/app/pythonpath/superset_config.py
   depends_on:
     postgres:
       condition: service_healthy
