@@ -74,11 +74,6 @@ export default function App() {
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-xs font-semibold uppercase tracking-wider">Live</span>
             </div>
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-accent to-secondary p-[2px]">
-              <div className="w-full h-full bg-surface rounded-full flex items-center justify-center font-bold text-sm">
-                AD
-              </div>
-            </div>
           </div>
         </header>
 

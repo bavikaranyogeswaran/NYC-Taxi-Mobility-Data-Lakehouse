@@ -107,7 +107,7 @@ NYC TLC CDN (Raw Parquet + CSV)
 ├── api/
 │   └── main.py                       # FastAPI application
 ├── docker/
-│   └── postgres-init.sql             # Creates airflow + lakehouse databases
+│   └── postgres-init.sh              # Creates airflow + lakehouse databases
 ├── tests/
 │   ├── conftest.py                   # Shared SparkSession fixture
 │   ├── test_config.py                # Config validation (pure Python)
@@ -232,16 +232,19 @@ This brings up the full stack: Postgres, MinIO, Airflow, FastAPI, and the React 
 git clone <repo-url>
 cd "NYC Taxi Mobility Data Lakehouse"
 
-# 2. Build the Airflow image (downloads Spark/Delta JARs — takes ~5 min once)
+# 2. Set up environment variables
+cp .env.example .env   # values are pre-filled for the local Docker stack
+
+# 3. Build the Airflow image (downloads Spark/Delta JARs — takes ~5 min once)
 docker compose build
 
-# 3. Start all services
+# 4. Start all services
 docker compose up -d
 
-# 4. Wait ~60 seconds for Airflow to initialise, then open the UI
+# 5. Wait ~60 seconds for Airflow to initialise, then open the UI
 #    http://localhost:8080  (admin / admin)
 
-# 5. Trigger the pipeline manually
+# 6. Trigger the pipeline manually
 #    In the Airflow UI → DAGs → nyc_taxi_lakehouse_pipeline → ▶ Trigger DAG
 ```
 
@@ -270,9 +273,11 @@ The dashboard will then be live at **http://localhost:5173**.
 
 ## Local Development (Without Docker)
 
-Install dependencies first:
+Set up your environment file first, then install dependencies:
 
 ```bash
+cp .env.example .env   # pre-filled with local dev defaults
+
 python -m venv venv
 venv\Scripts\activate        # Windows
 # source venv/bin/activate   # macOS/Linux
@@ -361,7 +366,7 @@ All pipeline paths and URLs live in `src/config.py`. Key settings:
 | `PIPELINE_SETTINGS["delta_write_mode"]` | `"overwrite"` | `"overwrite"` for dev, `"append"` for prod |
 | `PIPELINE_SETTINGS["dataset_months"]` | `[1, 2, 3]` | Q1 2024 |
 
-MinIO and PostgreSQL credentials are set via environment variables in `docker-compose.yml`. For local runs the pipeline falls back to `minioadmin / minioadmin` and `localhost:5432`.
+All credentials are read from environment variables — there are no hardcoded fallbacks. Copy `.env.example` to `.env` and fill in your values before running anything. The `.env.example` ships with the correct defaults for the local Docker stack.
 
 ---
 
