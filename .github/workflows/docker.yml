@@ -1,10 +1,11 @@
 name: Docker build
 
-# Only runs on pushes to main (not on PRs) because the Airflow image
-# downloads ~300 MB of Spark/Delta JARs — too slow for every PR check.
-# GHA layer caching means the download only happens when the Dockerfile changes.
+# Runs on pull requests to verify Dockerfiles build cleanly before merge.
+# Push-to-main builds are handled by cd.yml, which also pushes to GHCR.
+# GHA layer caching means the 300 MB Airflow JAR download is skipped on re-runs
+# unless Dockerfile.airflow or requirements.txt actually changes.
 on:
-  push:
+  pull_request:
     branches: [main]
 
 jobs:

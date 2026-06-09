@@ -31,7 +31,30 @@ jobs:
           extra_args: --only-verified
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # 1. Python lint — fast gate; other jobs wait for this to pass first.
+  # 1a. Dependency vulnerability scan — runs in parallel with lint.
+  #     pip-audit checks requirements.txt against PyPI advisory database.
+  #     Both this job AND lint must pass before any test job runs.
+  # ─────────────────────────────────────────────────────────────────────────────
+  dependency-audit:
+    name: Dependency audit (pip-audit)
+    runs-on: ubuntu-latest
+    needs: secret-scan
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Audit Python dependencies
+        run: pip-audit -r requirements.txt
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # 1b. Python lint — fast gate; other jobs wait for this to pass first.
   # ─────────────────────────────────────────────────────────────────────────────
   lint:
     name: Python lint (ruff)
@@ -58,7 +81,7 @@ jobs:
   unit-tests:
     name: Unit tests (pure Python)
     runs-on: ubuntu-latest
-    needs: lint
+    needs: [lint, dependency-audit]
 
     steps:
       - uses: actions/checkout@v4
@@ -81,7 +104,7 @@ jobs:
   spark-tests:
     name: PySpark tests
     runs-on: ubuntu-latest
-    needs: lint
+    needs: [lint, dependency-audit]
 
     steps:
       - uses: actions/checkout@v4
@@ -99,14 +122,16 @@ jobs:
 
       # Full install so PySpark + delta-spark are available.
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r requirements.txt pytest-cov
 
-      - name: Run PySpark tests
+      - name: Run PySpark tests with coverage
         run: |
           python -m pytest \
             tests/test_silver_dq.py \
             tests/test_silver_transforms.py \
             tests/test_gold_aggregations.py \
+            --cov=src \
+            --cov-report=term-missing \
             -v
 
   # ─────────────────────────────────────────────────────────────────────────────
@@ -116,6 +141,7 @@ jobs:
   frontend:
     name: Frontend (lint + build)
     runs-on: ubuntu-latest
+    needs: lint
 
     defaults:
       run:
@@ -133,8 +159,62 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Audit Node dependencies
+        run: npm audit --audit-level=high
+
       - name: ESLint
         run: npm run lint
 
       - name: Production build (tsc + vite)
         run: npm run build
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # 5. Docker Compose smoke test — starts Postgres + API, hits /health.
+  #    Runs after all test jobs so it only executes when code is already green.
+  # ─────────────────────────────────────────────────────────────────────────────
+  smoke-test:
+    name: Docker Compose smoke test
+    runs-on: ubuntu-latest
+    needs: [unit-tests, spark-tests, frontend]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write CI .env
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          AIRFLOW_DB_PASSWORD: ${{ secrets.AIRFLOW_DB_PASSWORD }}
+          PG_PASS: ${{ secrets.PG_PASS }}
+          FERNET_KEY: ${{ secrets.AIRFLOW__CORE__FERNET_KEY }}
+          SECRET_KEY: ${{ secrets.AIRFLOW__WEBSERVER__SECRET_KEY }}
+        run: |
+          {
+            echo "POSTGRES_USER=postgres"
+            echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}"
+            echo "AIRFLOW_DB_USER=airflow"
+            echo "AIRFLOW_DB_PASSWORD=${AIRFLOW_DB_PASSWORD}"
+            echo "PG_HOST=postgres"
+            echo "PG_PORT=5432"
+            echo "PG_DB=lakehouse"
+            echo "PG_USER=lakehouse"
+            echo "PG_PASS=${PG_PASS}"
+            echo "MINIO_ROOT_USER=ci"
+            echo "MINIO_ROOT_PASSWORD=ci-placeholder"
+            echo "AWS_ACCESS_KEY_ID=ci"
+            echo "AWS_SECRET_ACCESS_KEY=ci-placeholder"
+            echo "AIRFLOW__CORE__FERNET_KEY=${FERNET_KEY}"
+            echo "AIRFLOW__WEBSERVER__SECRET_KEY=${SECRET_KEY}"
+            echo "_AIRFLOW_WWW_USER_USERNAME=admin"
+            echo "_AIRFLOW_WWW_USER_PASSWORD=ci-placeholder"
+            echo "_AIRFLOW_WWW_USER_EMAIL=ci@example.com"
+          } > .env
+
+      - name: Start Postgres and API
+        run: docker compose up postgres api --build --wait --timeout 90
+
+      - name: Assert /health returns 200
+        run: curl --fail --silent --show-error http://localhost:8000/health
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v

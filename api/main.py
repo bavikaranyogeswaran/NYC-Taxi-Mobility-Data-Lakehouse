@@ -1,7 +1,9 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from datetime import datetime, timezone
 import os
 
 app = FastAPI(title="NYC Taxi Lakehouse API")
@@ -35,6 +37,16 @@ def get_db_connection():
     except Exception as e:
         print(f"Error connecting to Postgres: {e}")
         return None
+
+@app.get("/health")
+def health():
+    conn = get_db_connection()
+    ts = datetime.now(timezone.utc).isoformat()
+    if conn:
+        conn.close()
+        return {"status": "ok", "db": "ok", "ts": ts}
+    return JSONResponse(status_code=503, content={"status": "degraded", "db": "unavailable", "ts": ts})
+
 
 @app.get("/api/overview")
 def get_overview():

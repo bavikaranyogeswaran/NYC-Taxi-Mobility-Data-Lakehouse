@@ -1,0 +1,25 @@
+# Production image override — replaces build: directives with pre-built GHCR images.
+#
+# Usage (on the server):
+#   IMAGE_TAG=<git-sha> GHCR_OWNER=<github-username> \
+#     docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --no-build
+#
+# IMAGE_TAG defaults to 'latest' if not set.
+
+version: '3.8'
+
+services:
+  airflow-init:
+    image: ghcr.io/${GHCR_OWNER}/nyc-taxi-airflow:${IMAGE_TAG:-latest}
+
+  airflow-webserver:
+    image: ghcr.io/${GHCR_OWNER}/nyc-taxi-airflow:${IMAGE_TAG:-latest}
+
+  airflow-scheduler:
+    image: ghcr.io/${GHCR_OWNER}/nyc-taxi-airflow:${IMAGE_TAG:-latest}
+
+  api:
+    image: ghcr.io/${GHCR_OWNER}/nyc-taxi-api:${IMAGE_TAG:-latest}
+
+  frontend:
+    image: ghcr.io/${GHCR_OWNER}/nyc-taxi-frontend:${IMAGE_TAG:-latest}
