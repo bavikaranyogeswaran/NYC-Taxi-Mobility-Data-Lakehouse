@@ -1,21 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-@import "tailwindcss";
 
-@theme {
-  --color-background: #0F172A;
-  --color-surface: #1E293B;
-  --color-primary: #3B82F6;
-  --color-secondary: #8B5CF6;
-  --color-accent: #F59E0B;
-  --font-family-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
   body {
     @apply bg-background text-slate-100 font-sans antialiased overflow-hidden h-screen;
-    background-image: 
-      radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
-      radial-gradient(at 50% 0%, hsla(225,39%,30%,0.2) 0, transparent 50%), 
+    background-image:
+      radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%),
+      radial-gradient(at 50% 0%, hsla(225,39%,30%,0.2) 0, transparent 50%),
       radial-gradient(at 100% 0%, hsla(339,49%,30%,0.2) 0, transparent 50%);
     background-attachment: fixed;
   }
@@ -25,11 +19,11 @@
   .glass-panel {
     @apply bg-surface/40 backdrop-blur-md border border-white/10 shadow-xl rounded-2xl;
   }
-  
+
   .glass-card {
     @apply bg-surface/60 backdrop-blur-lg border border-white/5 shadow-lg rounded-xl transition-all duration-300 hover:bg-surface/80 hover:shadow-primary/20 hover:-translate-y-1;
   }
-  
+
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary;
   }

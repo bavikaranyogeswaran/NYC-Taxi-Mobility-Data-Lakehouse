@@ -28,21 +28,9 @@ x-airflow-common:
     postgres:
       condition: service_healthy
 
-x-superset-common:
-  &superset-common
-  image: apache/superset:3.0.3
-  environment:
-    - SUPERSET_SECRET_KEY=s0m3_s3cr3t_k3y_for_superset_12345
-    - SUPERSET_SQLALCHEMY_DATABASE_URI=postgresql+psycopg2://superset:superset@postgres/superset
-  volumes:
-    - ./docker/superset_config.py:/app/pythonpath/superset_config.py
-  depends_on:
-    postgres:
-      condition: service_healthy
-
 services:
   # ─────────────────────────────────────────────────────────────────────────────
-  # METADATA DATABASE (Shared by Airflow and Superset)
+  # METADATA DATABASE (Airflow)
   # ─────────────────────────────────────────────────────────────────────────────
   postgres:
     image: postgres:13
@@ -131,30 +119,15 @@ services:
         condition: service_completed_successfully
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # DASHBOARDING: Apache Superset
+  # FRONTEND: React + Vite dashboard (served by nginx)
   # ─────────────────────────────────────────────────────────────────────────────
-  superset-init:
-    <<: *superset-common
-    command: >
-      /bin/sh -c "
-      superset fab create-admin --username admin --firstname Superset --lastname Admin --email admin@lakehouse.local --password admin &&
-      superset db upgrade &&
-      superset init
-      "
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-  superset:
-    <<: *superset-common
-    command: "gunicorn -w 2 --timeout 120 -b  0.0.0.0:8088 --limit-request-line 0 --limit-request-field_size 0 'superset.app:create_app()'"
+  frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
     ports:
-      - "8088:8088"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      superset-init:
-        condition: service_completed_successfully
+      - "5173:80"
+    restart: unless-stopped
 
 volumes:
   postgres-db-volume:
