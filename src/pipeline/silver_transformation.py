@@ -20,7 +20,6 @@ Usage:
 ─────────────────────────────────────────────────────────────────
 """
 
-import os
 import sys
 import logging
 from pathlib import Path
@@ -170,7 +169,7 @@ def quarantine_invalid_records(df, valid_condition, write_mode: str) -> int:
             .mode(write_mode)
             .save(quarantine_path)
         )
-        logger.info(f"Quarantine write complete.")
+        logger.info("Quarantine write complete.")
 
         # Log a breakdown of failure reasons
         logger.info("Quarantine failure reason breakdown:")
@@ -307,7 +306,6 @@ def save_silver_table(df, write_mode: str) -> None:
     We select and reorder columns into the final Silver schema here so
     the output matches the specification exactly.
     """
-    from pyspark.sql import functions as F
 
     logger.info("Writing clean records to Silver Delta table ...")
 

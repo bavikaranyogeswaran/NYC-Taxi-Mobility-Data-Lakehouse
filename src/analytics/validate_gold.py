@@ -35,47 +35,47 @@ def run_validation():
     print("=" * 70)
     print("NYC Taxi Lakehouse -- DuckDB Gold Validation")
     print("=" * 70)
-    
+
     # 1. Connect to an in-memory DuckDB instance
     con = duckdb.connect(database=':memory:')
-    
+
     # We use DuckDB's native read_parquet to avoid Windows delta-kernel IO bugs.
     # On Windows, delta_scan can sometimes fail to parse the _delta_log directory.
-    
+
     # Paths to the Gold Delta tables (pointing to the Parquet data files)
     daily_revenue_path = (_LOCAL_GOLD_DIR / "daily_revenue_by_zone" / "*.parquet").resolve().as_posix()
     hourly_perf_path = (_LOCAL_GOLD_DIR / "hourly_performance" / "*.parquet").resolve().as_posix()
     route_summary_path = (_LOCAL_GOLD_DIR / "route_summary" / "*.parquet").resolve().as_posix()
     dq_summary_path = (_LOCAL_GOLD_DIR / "data_quality_summary" / "*.parquet").resolve().as_posix()
-    
+
     print("\n[2/3] Querying Gold Data Marts directly from disk...")
-    
+
     # ─────────────────────────────────────────────────────────────────────────
     # Query 1: Top 5 Highest Revenue Days & Zones
     # ─────────────────────────────────────────────────────────────────────────
     print("\n--- Top 5 Highest Revenue Pickup Zones by Day ---")
     query_revenue = f"""
-        SELECT 
-            pickup_date, 
-            pickup_borough, 
-            pickup_zone, 
-            total_trips, 
+        SELECT
+            pickup_date,
+            pickup_borough,
+            pickup_zone,
+            total_trips,
             ROUND(total_revenue, 2) AS total_revenue_usd
         FROM read_parquet('{daily_revenue_path}')
         ORDER BY total_revenue DESC
         LIMIT 5;
     """
     con.sql(query_revenue).show()
-    
+
     # ─────────────────────────────────────────────────────────────────────────
     # Query 2: Peak Hours for Traffic (Slowest average speeds)
     # ─────────────────────────────────────────────────────────────────────────
     print("\n--- Top 5 Slowest Hours (Traffic Analysis) ---")
     query_hourly = f"""
-        SELECT 
-            pickup_hour, 
-            total_trips, 
-            ROUND(avg_duration_minutes, 1) AS avg_duration_min, 
+        SELECT
+            pickup_hour,
+            total_trips,
+            ROUND(avg_duration_minutes, 1) AS avg_duration_min,
             ROUND(avg_speed_mph, 1) AS avg_speed_mph
         FROM read_parquet('{hourly_perf_path}')
         ORDER BY avg_speed_mph ASC
@@ -88,10 +88,10 @@ def run_validation():
     # ─────────────────────────────────────────────────────────────────────────
     print("\n--- Top 5 Most Popular Taxi Routes ---")
     query_routes = f"""
-        SELECT 
-            pickup_zone, 
-            dropoff_zone, 
-            total_trips, 
+        SELECT
+            pickup_zone,
+            dropoff_zone,
+            total_trips,
             ROUND(avg_distance, 1) AS avg_dist_miles,
             ROUND(avg_fare, 2) AS avg_fare_usd
         FROM read_parquet('{route_summary_path}')
@@ -99,13 +99,13 @@ def run_validation():
         LIMIT 5;
     """
     con.sql(query_routes).show()
-    
+
     # ─────────────────────────────────────────────────────────────────────────
     # Query 4: Overall Data Quality Health
     # ─────────────────────────────────────────────────────────────────────────
     print("\n--- High-Level Data Quality Summary ---")
     query_dq = f"""
-        SELECT 
+        SELECT
             SUM(valid_records) AS total_valid,
             SUM(invalid_records) AS total_invalid,
             ROUND((SUM(invalid_records)*100.0) / (SUM(valid_records) + SUM(invalid_records)), 2) AS failure_rate_pct

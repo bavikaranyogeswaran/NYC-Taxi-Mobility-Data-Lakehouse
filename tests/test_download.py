@@ -7,9 +7,7 @@ All HTTP calls are mocked — no network required.
 ──────────────────────────────────────────────────────────────────
 """
 
-import pytest
 import requests as req
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from ingestion.download_data import download_file, _progress_bar

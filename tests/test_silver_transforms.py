@@ -78,7 +78,6 @@ class TestTripDuration:
 class TestTemporalFeatures:
     def test_pickup_date_extracted(self, spark):
         """pickup_date should be the date part of the pickup timestamp."""
-        from datetime import date
         df = spark.createDataFrame([_bronze_row()], schema=BRONZE_SCHEMA)
         result = add_derived_columns(df).first()
         assert str(result["pickup_date"]) == "2024-01-15"

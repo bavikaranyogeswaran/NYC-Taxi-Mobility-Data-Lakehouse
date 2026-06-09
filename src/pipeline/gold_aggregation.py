@@ -79,7 +79,7 @@ def aggregate_daily_revenue_by_zone(df):
     """
     Creates a data mart answering:
       "Which zones generate the most revenue and trips on a given day?"
-    
+
     Aggregates:
       - Total trips
       - Total revenue (sum of total_amount)
@@ -113,7 +113,7 @@ def aggregate_hourly_performance(df):
     """
     Creates a data mart answering:
       "How does taxi speed and trip duration vary by hour of the day?"
-      
+
     Aggregates:
       - Total trips
       - Average trip duration (minutes)
@@ -178,29 +178,29 @@ def aggregate_dq_summary(spark):
     of data quality over time.
     """
     from pyspark.sql import functions as F
-    
+
     logger.info("Aggregating data quality summary ...")
-    
+
     silver_df = spark.read.format("delta").load(SILVER_YELLOW_TAXI_PATH)
     quarantine_df = spark.read.format("delta").load(QUARANTINE_YELLOW_TAXI_PATH)
-    
+
     # Get daily valid counts
     valid_daily = (
         silver_df.groupBy("pickup_date")
         .agg(F.count("*").alias("valid_records"))
         .withColumnRenamed("pickup_date", "dq_date")
     )
-    
+
     # Get daily invalid counts (using ingested_at since bad records might have null dates)
     invalid_daily = (
         quarantine_df.withColumn("dq_date", F.to_date("ingested_at"))
         .groupBy("dq_date", "dq_fail_reason")
         .agg(F.count("*").alias("invalid_records"))
     )
-    
+
     # Join them
     dq_summary = invalid_daily.join(valid_daily, "dq_date", "full_outer")
-    
+
     return dq_summary
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -297,7 +297,7 @@ def run_gold_aggregation() -> None:
             write_mode=write_mode,
         )
         save_gold_to_postgres(route_summary_df, "gold_route_summary", write_mode)
-        
+
         # ── 4. Data Quality Summary
         dq_summary_df = aggregate_dq_summary(spark)
         save_gold_table(

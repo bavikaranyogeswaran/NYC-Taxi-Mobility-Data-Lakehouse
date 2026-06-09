@@ -1,0 +1,25 @@
+# ruff.toml — Python linting for NYC Taxi Mobility Data Lakehouse
+# https://docs.astral.sh/ruff/configuration/
+
+line-length = 110
+target-version = "py310"
+
+exclude = [
+    ".venv",
+    "venv",
+    "__pycache__",
+    "hadoop",
+    "data",
+    "logs",
+]
+
+[lint]
+# E = pycodestyle errors  |  F = pyflakes  |  W = pycodestyle warnings
+select = ["E", "F", "W"]
+
+ignore = [
+    # All pipeline scripts do `sys.path.insert()` before project imports — by design.
+    "E402",
+    # Spark chains, SQL strings, and DQ conditions are intentionally wide.
+    "E501",
+]

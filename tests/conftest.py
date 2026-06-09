@@ -23,7 +23,7 @@ def spark():
     (test_config, test_download) can still run in environments where PySpark
     is not installed.
     """
-    pyspark = pytest.importorskip("pyspark", reason="pyspark not installed — skipping Spark tests")
+    pytest.importorskip("pyspark", reason="pyspark not installed — skipping Spark tests")
     from pyspark.sql import SparkSession
 
     session = (

@@ -8,7 +8,6 @@ regression immediately shows which rule broke.
 ──────────────────────────────────────────────────────────────────
 """
 
-import pytest
 from datetime import datetime
 
 from pyspark.sql import Row

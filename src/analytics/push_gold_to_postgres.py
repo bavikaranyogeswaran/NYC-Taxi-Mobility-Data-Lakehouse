@@ -21,7 +21,6 @@ sys.path.insert(0, str(PROJECT_ROOT / "src"))
 import duckdb
 import psycopg2
 import psycopg2.extras
-import decimal
 import datetime
 
 # ── Postgres connection ───────────────────────────────────────────────────────
@@ -58,11 +57,16 @@ def push_table(con_duckdb, con_pg, table_name: str, parquet_dir: Path):
     # Build Postgres CREATE TABLE DDL based on DuckDB column types
     def pg_type(duckdb_type_code):
         t = str(duckdb_type_code).upper()
-        if "INT" in t:      return "BIGINT"
-        if "FLOAT" in t or "DOUBLE" in t or "DECIMAL" in t or "HUGEINT" in t: return "DOUBLE PRECISION"
-        if "TIMESTAMP" in t: return "TIMESTAMP"
-        if "DATE" in t:      return "DATE"
-        if "BOOL" in t:      return "BOOLEAN"
+        if "INT" in t:
+            return "BIGINT"
+        if "FLOAT" in t or "DOUBLE" in t or "DECIMAL" in t or "HUGEINT" in t:
+            return "DOUBLE PRECISION"
+        if "TIMESTAMP" in t:
+            return "TIMESTAMP"
+        if "DATE" in t:
+            return "DATE"
+        if "BOOL" in t:
+            return "BOOLEAN"
         return "TEXT"
 
     col_defs = ", ".join(f'"{c}" {pg_type(ct)}' for c, ct in zip(cols, col_types))
