@@ -47,6 +47,8 @@ services:
       retries: 5
     ports:
       - "5432:5432"
+    mem_limit: 256m
+    restart: unless-stopped
 
   # ─────────────────────────────────────────────────────────────────────────────
   # STORAGE: MinIO (S3-compatible Object Storage)
@@ -62,15 +64,23 @@ services:
       - "9001:9001"  # Console UI port
     volumes:
       - minio-data-volume:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    mem_limit: 256m
+    restart: unless-stopped
 
   # Task 6.3 Automation: Auto-create the 'lakehouse' bucket on startup
   minio-init:
     image: minio/mc:RELEASE.2023-11-20T16-30-59Z
     depends_on:
-      - minio
+      minio:
+        condition: service_healthy
+    restart: "no"
     entrypoint: >
       /bin/sh -c "
-      sleep 10;
       mc alias set local_minio http://minio:9000 minioadmin minioadmin;
       mc mb local_minio/lakehouse || true;
       mc anonymous set public local_minio/lakehouse;
@@ -83,6 +93,7 @@ services:
   airflow-init:
     <<: *airflow-common
     command: version
+    restart: "no"
     environment:
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -108,6 +119,8 @@ services:
         condition: service_healthy
       airflow-init:
         condition: service_completed_successfully
+    mem_limit: 800m
+    restart: unless-stopped
 
   airflow-scheduler:
     <<: *airflow-common
@@ -117,6 +130,8 @@ services:
         condition: service_healthy
       airflow-init:
         condition: service_completed_successfully
+    mem_limit: 512m
+    restart: unless-stopped
 
   # ─────────────────────────────────────────────────────────────────────────────
   # API: FastAPI backend (queries PostgreSQL gold tables)
@@ -133,6 +148,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    mem_limit: 128m
     restart: unless-stopped
 
   # ─────────────────────────────────────────────────────────────────────────────
@@ -144,6 +160,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5173:80"
+    mem_limit: 64m
     restart: unless-stopped
 
 volumes:
