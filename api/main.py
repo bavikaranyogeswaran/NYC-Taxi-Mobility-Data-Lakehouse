@@ -18,9 +18,9 @@ app.add_middleware(
 # Connect to the local Postgres database where Gold data is loaded
 PG_HOST = os.environ.get("PG_HOST", "127.0.0.1")
 PG_PORT = os.environ.get("PG_PORT", "5432")
-PG_DB = "superset"
-PG_USER = "superset"
-PG_PASS = "superset"
+PG_DB = os.environ.get("PG_DB", "lakehouse")
+PG_USER = os.environ.get("PG_USER", "lakehouse")
+PG_PASS = os.environ.get("PG_PASS", "lakehouse")
 
 def get_db_connection():
     try:
@@ -38,12 +38,12 @@ def get_overview():
     conn = get_db_connection()
     if not conn:
         raise HTTPException(status_code=500, detail="Database connection failed")
-    
+
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             # Aggregate overall stats
             cur.execute("""
-                SELECT 
+                SELECT
                     SUM(total_trips) as total_trips,
                     SUM(total_revenue) as total_revenue,
                     AVG(avg_fare) as average_fare,
@@ -72,7 +72,7 @@ def get_demand_analysis():
     conn = get_db_connection()
     if not conn:
         raise HTTPException(status_code=500, detail="Database connection failed")
-    
+
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("""
@@ -89,7 +89,7 @@ def get_location_analysis():
     conn = get_db_connection()
     if not conn:
         raise HTTPException(status_code=500, detail="Database connection failed")
-    
+
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             # Top pickup zones by revenue

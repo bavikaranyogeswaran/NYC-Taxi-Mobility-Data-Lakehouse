@@ -13,6 +13,9 @@ Gold Data Marts produced:
   3. gold_route_summary         : Top pickup-to-dropoff routes by volume.
   4. gold_data_quality_summary  : Daily invalid rates from the quarantine table.
 
+Results are written to MinIO (Delta tables) and pushed to PostgreSQL
+for the FastAPI backend and React dashboard.
+
 Usage:
     python src/pipeline/gold_aggregation.py
 ─────────────────────────────────────────────────────────────────
@@ -222,16 +225,16 @@ def save_gold_table(df, folder_name: str, table_name: str, write_mode: str):
     logger.info(f"Saved {table_name}: {written:,} rows -> {path_str}")
 
 # ─────────────────────────────────────────────────────────────────────────────
-# TASK 7.2 — Save Gold Tables to Postgres (Serving Layer for Superset)
+# TASK 7.2 — Save Gold Tables to Postgres (Serving Layer for FastAPI / React)
 # ─────────────────────────────────────────────────────────────────────────────
 def save_gold_to_postgres(df, table_name: str, write_mode: str):
-    """Pushes Gold Data Marts to Postgres so Superset can query them instantly."""
+    """Pushes Gold Data Marts to Postgres so the FastAPI backend can serve them."""
     # If running inside Airflow Docker, host is 'postgres', else '127.0.0.1'
     pg_host = os.environ.get("POSTGRES_HOST", "127.0.0.1")
-    url = f"jdbc:postgresql://{pg_host}:5432/superset"
+    url = f"jdbc:postgresql://{pg_host}:5432/lakehouse"
     properties = {
-        "user": "superset",
-        "password": "superset",
+        "user": "lakehouse",
+        "password": "lakehouse",
         "driver": "org.postgresql.Driver",
         # Use stringtype=unspecified to avoid strict typing errors
         "stringtype": "unspecified"

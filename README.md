@@ -63,15 +63,14 @@ NYC TLC CDN
 │   ├── analytics/
 │   │   ├── validate_gold.py      # DuckDB-based Gold validation
 │   │   └── push_gold_to_postgres.py  # Load Gold into PostgreSQL
-│   ├── utils/
-│   │   └── spark_utils.py        # Shared SparkSession factory
-│   └── frontend/
-│       └── src/                  # React + TypeScript dashboard
+│   └── utils/
+│       └── spark_utils.py        # Shared SparkSession factory
+├── frontend/
+│   └── src/                      # React + TypeScript dashboard
 ├── api/
 │   └── main.py                   # FastAPI application
 ├── docker/
-│   ├── postgres-init.sql         # Creates airflow + superset databases
-│   └── superset_config.py
+│   └── postgres-init.sql         # Creates airflow + lakehouse databases
 ├── tests/
 │   ├── conftest.py               # Shared SparkSession fixture
 │   ├── test_config.py            # Config validation (pure Python)
@@ -237,7 +236,7 @@ python src/analytics/push_gold_to_postgres.py
 ### Frontend dev server
 
 ```bash
-cd src/frontend
+cd frontend
 npm install
 npm run dev
 # → http://localhost:5173

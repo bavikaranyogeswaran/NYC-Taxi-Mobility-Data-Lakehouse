@@ -2,10 +2,10 @@
 push_gold_to_postgres.py
 ────────────────────────────────────────────────────────────────────────
 One-shot script: reads Gold Parquet files locally with DuckDB, then
-writes them to Postgres (superset DB) via psycopg2.
+writes them to the lakehouse Postgres DB via psycopg2.
 
 Run this ONCE after a successful pipeline run to populate Postgres
-so Superset has data to visualise.
+so the FastAPI / React dashboard has data to serve.
 
 Usage:
     .venv\\Scripts\\python src\\analytics\\push_gold_to_postgres.py
@@ -26,9 +26,9 @@ import datetime
 # ── Postgres connection ───────────────────────────────────────────────────────
 PG_HOST = "127.0.0.1"
 PG_PORT = 5432
-PG_DB   = "superset"
-PG_USER = "superset"
-PG_PASS = "superset"
+PG_DB   = "lakehouse"
+PG_USER = "lakehouse"
+PG_PASS = "lakehouse"
 
 # ── Gold parquet folders ──────────────────────────────────────────────────────
 GOLD_BASE = PROJECT_ROOT / "data" / "gold"
@@ -123,7 +123,7 @@ def main():
     con_pg.close()
     con_duckdb.close()
     print("\nDone -- all Gold tables are now in Postgres!")
-    print(f"  Connect Superset to: postgresql+psycopg2://{PG_USER}:{PG_PASS}@{PG_HOST}/{PG_DB}")
+    print(f"  Lakehouse DB: postgresql+psycopg2://{PG_USER}:{PG_PASS}@{PG_HOST}/{PG_DB}")
 
 
 if __name__ == "__main__":
