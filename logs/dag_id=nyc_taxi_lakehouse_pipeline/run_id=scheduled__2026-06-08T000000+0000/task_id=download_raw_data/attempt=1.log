@@ -1,0 +1,44 @@
+[2026-06-09T05:29:24.422+0000] {taskinstance.py:1956} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: nyc_taxi_lakehouse_pipeline.download_raw_data scheduled__2026-06-08T00:00:00+00:00 [queued]>
+[2026-06-09T05:29:24.432+0000] {taskinstance.py:1956} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: nyc_taxi_lakehouse_pipeline.download_raw_data scheduled__2026-06-08T00:00:00+00:00 [queued]>
+[2026-06-09T05:29:24.433+0000] {taskinstance.py:2170} INFO - Starting attempt 1 of 2
+[2026-06-09T05:29:24.453+0000] {taskinstance.py:2191} INFO - Executing <Task(BashOperator): download_raw_data> on 2026-06-08 00:00:00+00:00
+[2026-06-09T05:29:24.461+0000] {standard_task_runner.py:60} INFO - Started process 178 to run task
+[2026-06-09T05:29:24.464+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'nyc_taxi_lakehouse_pipeline', 'download_raw_data', 'scheduled__2026-06-08T00:00:00+00:00', '--job-id', '10', '--raw', '--subdir', 'DAGS_FOLDER/taxi_pipeline.py', '--cfg-path', '/tmp/tmpc132wo7d']
+[2026-06-09T05:29:24.470+0000] {standard_task_runner.py:88} INFO - Job 10: Subtask download_raw_data
+[2026-06-09T05:29:24.561+0000] {task_command.py:423} INFO - Running <TaskInstance: nyc_taxi_lakehouse_pipeline.download_raw_data scheduled__2026-06-08T00:00:00+00:00 [running]> on host 6c6b542dd66b
+[2026-06-09T05:29:24.663+0000] {taskinstance.py:2480} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='data_engineer' AIRFLOW_CTX_DAG_ID='nyc_taxi_lakehouse_pipeline' AIRFLOW_CTX_TASK_ID='download_raw_data' AIRFLOW_CTX_EXECUTION_DATE='2026-06-08T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2026-06-08T00:00:00+00:00'
+[2026-06-09T05:29:24.671+0000] {subprocess.py:63} INFO - Tmp dir root location: /tmp
+[2026-06-09T05:29:24.672+0000] {subprocess.py:75} INFO - Running command: ['/usr/bin/bash', '-c', 'cd /opt/*** && python src/ingestion/download_data.py']
+[2026-06-09T05:29:24.689+0000] {subprocess.py:86} INFO - Output:
+[2026-06-09T05:29:25.121+0000] {subprocess.py:93} INFO - 2026-06-09 05:29:25,121  [INFO]  ============================================================
+[2026-06-09T05:29:25.122+0000] {subprocess.py:93} INFO - 2026-06-09 05:29:25,121  [INFO]  NYC Taxi Lakehouse — Data Ingestion
+[2026-06-09T05:29:25.123+0000] {subprocess.py:93} INFO - 2026-06-09 05:29:25,122  [INFO]  Files to download : 4
+[2026-06-09T05:29:25.123+0000] {subprocess.py:93} INFO - 2026-06-09 05:29:25,122  [INFO]  Log file          : /opt/***/logs/ingestion.log
+[2026-06-09T05:29:25.124+0000] {subprocess.py:93} INFO - 2026-06-09 05:29:25,122  [INFO]  ============================================================
+[2026-06-09T05:29:25.130+0000] {subprocess.py:93} INFO - 
+[2026-06-09T05:29:25.130+0000] {subprocess.py:93} INFO -   Downloading: yellow_tripdata_2024-01.parquet
+[2026-06-09T05:29:25.131+0000] {subprocess.py:93} INFO - 2026-06-09 05:29:25,129  [INFO]  SKIP  yellow_tripdata_2024-01.parquet already exists (50.0 MB)
+[2026-06-09T05:29:25.136+0000] {subprocess.py:93} INFO - 
+[2026-06-09T05:29:25.136+0000] {subprocess.py:93} INFO -   Downloading: yellow_tripdata_2024-02.parquet
+[2026-06-09T05:29:25.137+0000] {subprocess.py:93} INFO - 2026-06-09 05:29:25,135  [INFO]  SKIP  yellow_tripdata_2024-02.parquet already exists (50.3 MB)
+[2026-06-09T05:29:25.141+0000] {subprocess.py:93} INFO - 
+[2026-06-09T05:29:25.142+0000] {subprocess.py:93} INFO -   Downloading: yellow_tripdata_2024-03.parquet
+[2026-06-09T05:29:25.142+0000] {subprocess.py:93} INFO - 2026-06-09 05:29:25,141  [INFO]  SKIP  yellow_tripdata_2024-03.parquet already exists (60.1 MB)
+[2026-06-09T05:29:25.147+0000] {subprocess.py:93} INFO - 
+[2026-06-09T05:29:25.148+0000] {subprocess.py:93} INFO -   Downloading: taxi_zone_lookup.csv
+[2026-06-09T05:29:25.148+0000] {subprocess.py:93} INFO - 2026-06-09 05:29:25,147  [INFO]  SKIP  taxi_zone_lookup.csv already exists (0.0 MB)
+[2026-06-09T05:29:25.149+0000] {subprocess.py:93} INFO - 
+[2026-06-09T05:29:25.153+0000] {subprocess.py:93} INFO - ============================================================
+[2026-06-09T05:29:25.156+0000] {subprocess.py:93} INFO - Download Summary
+[2026-06-09T05:29:25.163+0000] {subprocess.py:93} INFO - ============================================================
+[2026-06-09T05:29:25.169+0000] {subprocess.py:93} INFO -   [OK]   yellow_tripdata_2024-01.parquet
+[2026-06-09T05:29:25.177+0000] {subprocess.py:93} INFO -   [OK]   yellow_tripdata_2024-02.parquet
+[2026-06-09T05:29:25.183+0000] {subprocess.py:93} INFO -   [OK]   yellow_tripdata_2024-03.parquet
+[2026-06-09T05:29:25.184+0000] {subprocess.py:93} INFO -   [OK]   taxi_zone_lookup.csv
+[2026-06-09T05:29:25.185+0000] {subprocess.py:93} INFO - 
+[2026-06-09T05:29:25.185+0000] {subprocess.py:93} INFO -   Total : 4  |  OK: 4  |  Failed: 0
+[2026-06-09T05:29:25.186+0000] {subprocess.py:93} INFO - 2026-06-09 05:29:25,147  [INFO]  Ingestion completed successfully. All files downloaded.
+[2026-06-09T05:29:25.186+0000] {subprocess.py:97} INFO - Command exited with return code 0
+[2026-06-09T05:29:25.211+0000] {taskinstance.py:1138} INFO - Marking task as SUCCESS. dag_id=nyc_taxi_lakehouse_pipeline, task_id=download_raw_data, execution_date=20260608T000000, start_date=20260609T052924, end_date=20260609T052925
+[2026-06-09T05:29:25.241+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 0
+[2026-06-09T05:29:25.272+0000] {taskinstance.py:3280} INFO - 1 downstream tasks scheduled from follow-on schedule check

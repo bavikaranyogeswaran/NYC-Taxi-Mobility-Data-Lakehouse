@@ -1,0 +1,87 @@
+[2026-06-09T05:30:04.875+0000] {taskinstance.py:1956} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: nyc_taxi_lakehouse_pipeline.silver_transformation scheduled__2026-06-08T00:00:00+00:00 [queued]>
+[2026-06-09T05:30:04.884+0000] {taskinstance.py:1956} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: nyc_taxi_lakehouse_pipeline.silver_transformation scheduled__2026-06-08T00:00:00+00:00 [queued]>
+[2026-06-09T05:30:04.885+0000] {taskinstance.py:2170} INFO - Starting attempt 1 of 2
+[2026-06-09T05:30:04.901+0000] {taskinstance.py:2191} INFO - Executing <Task(BashOperator): silver_transformation> on 2026-06-08 00:00:00+00:00
+[2026-06-09T05:30:04.906+0000] {standard_task_runner.py:60} INFO - Started process 593 to run task
+[2026-06-09T05:30:04.911+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'nyc_taxi_lakehouse_pipeline', 'silver_transformation', 'scheduled__2026-06-08T00:00:00+00:00', '--job-id', '12', '--raw', '--subdir', 'DAGS_FOLDER/taxi_pipeline.py', '--cfg-path', '/tmp/tmpgsnv6tpk']
+[2026-06-09T05:30:04.915+0000] {standard_task_runner.py:88} INFO - Job 12: Subtask silver_transformation
+[2026-06-09T05:30:05.004+0000] {task_command.py:423} INFO - Running <TaskInstance: nyc_taxi_lakehouse_pipeline.silver_transformation scheduled__2026-06-08T00:00:00+00:00 [running]> on host 6c6b542dd66b
+[2026-06-09T05:30:05.112+0000] {taskinstance.py:2480} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='data_engineer' AIRFLOW_CTX_DAG_ID='nyc_taxi_lakehouse_pipeline' AIRFLOW_CTX_TASK_ID='silver_transformation' AIRFLOW_CTX_EXECUTION_DATE='2026-06-08T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2026-06-08T00:00:00+00:00'
+[2026-06-09T05:30:05.114+0000] {subprocess.py:63} INFO - Tmp dir root location: /tmp
+[2026-06-09T05:30:05.116+0000] {subprocess.py:75} INFO - Running command: ['/usr/bin/bash', '-c', 'cd /opt/*** && python src/pipeline/silver_transformation.py']
+[2026-06-09T05:30:05.126+0000] {subprocess.py:86} INFO - Output:
+[2026-06-09T05:30:05.309+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:05,308  [INFO]  ============================================================
+[2026-06-09T05:30:05.310+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:05,309  [INFO]  NYC Taxi Lakehouse -- Silver Transformation
+[2026-06-09T05:30:05.311+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:05,310  [INFO]  Write mode: overwrite
+[2026-06-09T05:30:05.311+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:05,310  [INFO]  ============================================================
+[2026-06-09T05:30:05.797+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:05,796  [INFO]  Initialising SparkSession [NYC_Taxi_Silver_Transformation]  |  MinIO=http://minio:9000
+[2026-06-09T05:30:05.799+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:05,798  [INFO]  Using pre-baked JARs from /opt/spark/jars  (5 files)
+[2026-06-09T05:30:07.608+0000] {subprocess.py:93} INFO - :: loading settings :: url = jar:file:/home/***/.local/lib/python3.10/site-packages/pyspark/jars/ivy-2.5.1.jar!/org/apache/ivy/core/settings/ivysettings.xml
+[2026-06-09T05:30:07.697+0000] {subprocess.py:93} INFO - Ivy Default Cache set to: /home/***/.ivy2/cache
+[2026-06-09T05:30:07.698+0000] {subprocess.py:93} INFO - The jars for the packages stored in: /home/***/.ivy2/jars
+[2026-06-09T05:30:07.702+0000] {subprocess.py:93} INFO - io.delta#delta-spark_2.12 added as a dependency
+[2026-06-09T05:30:07.703+0000] {subprocess.py:93} INFO - :: resolving dependencies :: org.apache.spark#spark-submit-parent-da6af1c2-bf59-407a-94ee-1e9f7d9404fb;1.0
+[2026-06-09T05:30:07.704+0000] {subprocess.py:93} INFO - 	confs: [default]
+[2026-06-09T05:30:07.870+0000] {subprocess.py:93} INFO - 	found io.delta#delta-spark_2.12;3.3.0 in central
+[2026-06-09T05:30:07.899+0000] {subprocess.py:93} INFO - 	found io.delta#delta-storage;3.3.0 in central
+[2026-06-09T05:30:07.921+0000] {subprocess.py:93} INFO - 	found org.antlr#antlr4-runtime;4.9.3 in central
+[2026-06-09T05:30:07.939+0000] {subprocess.py:93} INFO - :: resolution report :: resolve 228ms :: artifacts dl 8ms
+[2026-06-09T05:30:07.940+0000] {subprocess.py:93} INFO - 	:: modules in use:
+[2026-06-09T05:30:07.941+0000] {subprocess.py:93} INFO - 	io.delta#delta-spark_2.12;3.3.0 from central in [default]
+[2026-06-09T05:30:07.941+0000] {subprocess.py:93} INFO - 	io.delta#delta-storage;3.3.0 from central in [default]
+[2026-06-09T05:30:07.942+0000] {subprocess.py:93} INFO - 	org.antlr#antlr4-runtime;4.9.3 from central in [default]
+[2026-06-09T05:30:07.943+0000] {subprocess.py:93} INFO - 	---------------------------------------------------------------------
+[2026-06-09T05:30:07.944+0000] {subprocess.py:93} INFO - 	|                  |            modules            ||   artifacts   |
+[2026-06-09T05:30:07.944+0000] {subprocess.py:93} INFO - 	|       conf       | number| search|dwnlded|evicted|| number|dwnlded|
+[2026-06-09T05:30:07.945+0000] {subprocess.py:93} INFO - 	---------------------------------------------------------------------
+[2026-06-09T05:30:07.945+0000] {subprocess.py:93} INFO - 	|      default     |   3   |   0   |   0   |   0   ||   3   |   0   |
+[2026-06-09T05:30:07.946+0000] {subprocess.py:93} INFO - 	---------------------------------------------------------------------
+[2026-06-09T05:30:07.947+0000] {subprocess.py:93} INFO - :: retrieving :: org.apache.spark#spark-submit-parent-da6af1c2-bf59-407a-94ee-1e9f7d9404fb
+[2026-06-09T05:30:07.947+0000] {subprocess.py:93} INFO - 	confs: [default]
+[2026-06-09T05:30:07.949+0000] {subprocess.py:93} INFO - 	0 artifacts copied, 3 already retrieved (0kB/5ms)
+[2026-06-09T05:30:08.142+0000] {subprocess.py:93} INFO - 26/06/09 05:30:08 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+[2026-06-09T05:30:08.345+0000] {subprocess.py:93} INFO - Setting default log level to "WARN".
+[2026-06-09T05:30:08.346+0000] {subprocess.py:93} INFO - To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+[2026-06-09T05:30:08.565+0000] {subprocess.py:93} INFO - Setting Spark log level to "WARN".
+[2026-06-09T05:30:11.355+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:11,354  [INFO]  SparkSession ready  |  version=3.5.4
+[2026-06-09T05:30:11.356+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:11,355  [INFO]  Reading Bronze trips from: s3a://lakehouse/bronze/yellow_taxi
+[2026-06-09T05:30:12.426+0000] {subprocess.py:93} INFO - 26/06/09 05:30:12 WARN MetricsConfig: Cannot locate configuration: tried hadoop-metrics2-s3a-file-system.properties,hadoop-metrics2.properties
+[2026-06-09T05:30:17.086+0000] {subprocess.py:93} INFO - 26/06/09 05:30:17 WARN SparkStringUtils: Truncated the string representation of a plan since it was too large. This behavior can be adjusted by setting 'spark.sql.debug.maxToStringFields'.
+[2026-06-09T05:30:21.617+0000] {subprocess.py:93} INFO - [Stage 0:>                                                          (0 + 1) / 1][Stage 2:>                                                        (0 + 16) / 50][Stage 2:=================>                                      (16 + 16) / 50][Stage 2:========================================>               (36 + 14) / 50]                                                                                2026-06-09 05:30:21,616  [INFO]  Bronze trips loaded: 9,554,778 rows
+[2026-06-09T05:30:21.618+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:21,617  [INFO]  Loading Bronze taxi zones from: s3a://lakehouse/bronze/taxi_zones
+[2026-06-09T05:30:23.077+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:23,077  [INFO]  Bronze zones loaded: 265 rows
+[2026-06-09T05:30:23.319+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:23,318  [INFO]  Identifying invalid records ...
+[2026-06-09T05:30:24.858+0000] {subprocess.py:93} INFO - [Stage 19:========================>                               (8 + 10) / 18][Stage 19:===========================================>            (14 + 4) / 18]                                                                                2026-06-09 05:30:24,857  [INFO]  Invalid records found: 444,756
+[2026-06-09T05:30:24.860+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:24,858  [INFO]  Writing 444,756 quarantine records to: s3a://lakehouse/quarantine/yellow_taxi
+[2026-06-09T05:30:28.500+0000] {subprocess.py:93} INFO - [Stage 24:========================>                               (8 + 10) / 18][Stage 24:=================================================>      (16 + 2) / 18]                                                                                2026-06-09 05:30:28,499  [INFO]  Quarantine write complete.
+[2026-06-09T05:30:28.501+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:28,500  [INFO]  Quarantine failure reason breakdown:
+[2026-06-09T05:30:31.070+0000] {subprocess.py:93} INFO - [Stage 27:========================>                               (8 + 10) / 18]                                                                                [Stage 32:============================>                            (9 + 9) / 18][Stage 32:==================================>                     (11 + 7) / 18]                                                                                +---------------------------+------+
+[2026-06-09T05:30:31.071+0000] {subprocess.py:93} INFO - |dq_fail_reason             |count |
+[2026-06-09T05:30:31.072+0000] {subprocess.py:93} INFO - +---------------------------+------+
+[2026-06-09T05:30:31.072+0000] {subprocess.py:93} INFO - |zero_or_negative_distance  |213308|
+[2026-06-09T05:30:31.073+0000] {subprocess.py:93} INFO - |negative_fare              |126047|
+[2026-06-09T05:30:31.074+0000] {subprocess.py:93} INFO - |zero_or_negative_passengers|102359|
+[2026-06-09T05:30:31.074+0000] {subprocess.py:93} INFO - |dropoff_before_pickup      |2801  |
+[2026-06-09T05:30:31.075+0000] {subprocess.py:93} INFO - |negative_total_amount      |241   |
+[2026-06-09T05:30:31.076+0000] {subprocess.py:93} INFO - +---------------------------+------+
+[2026-06-09T05:30:31.076+0000] {subprocess.py:93} INFO - 
+[2026-06-09T05:30:31.077+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:31,068  [INFO]  Valid records: 8,480,466
+[2026-06-09T05:30:32.216+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:32,215  [INFO]  Adding derived columns and standardising column names ...
+[2026-06-09T05:30:32.300+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:32,299  [INFO]  Joining trips with taxi zone lookup (Broadcast Join) ...
+[2026-06-09T05:30:32.392+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:32,392  [INFO]  Zone join complete.
+[2026-06-09T05:30:32.393+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:32,392  [INFO]  Writing clean records to Silver Delta table ...
+[2026-06-09T05:30:47.801+0000] {subprocess.py:93} INFO - [Stage 45:>                                                       (0 + 16) / 18][Stage 45:==================>                                     (6 + 12) / 18][Stage 45:========================>                               (8 + 10) / 18][Stage 45:============================>                            (9 + 9) / 18][Stage 45:===============================>                        (10 + 8) / 18][Stage 45:==================================>                     (11 + 7) / 18][Stage 45:========================================>               (13 + 5) / 18][Stage 45:==============================================>         (15 + 3) / 18]                                                                                [Stage 51:============================>                            (9 + 9) / 18]                                                                                2026-06-09 05:30:47,799  [INFO]  Saved 8,480,466 clean rows to Silver -> s3a://lakehouse/silver/yellow_taxi
+[2026-06-09T05:30:47.802+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:47,801  [INFO]  ============================================================
+[2026-06-09T05:30:47.803+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:47,801  [INFO]  Silver Transformation Summary
+[2026-06-09T05:30:47.804+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:47,802  [INFO]    Total Bronze records : 9,554,778
+[2026-06-09T05:30:47.804+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:47,802  [INFO]    Valid records        : 8,480,466
+[2026-06-09T05:30:47.805+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:47,803  [INFO]    Quarantined records  : 444,756
+[2026-06-09T05:30:47.806+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:47,804  [INFO]    Invalid rate         : 4.65%
+[2026-06-09T05:30:47.807+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:47,804  [INFO]    Total runtime        : 42.5s
+[2026-06-09T05:30:47.808+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:47,805  [INFO]  ============================================================
+[2026-06-09T05:30:48.213+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:48,213  [INFO]  SparkSession stopped.
+[2026-06-09T05:30:48.242+0000] {subprocess.py:93} INFO - 2026-06-09 05:30:48,214  [INFO]  Closing down clientserver connection
+[2026-06-09T05:30:48.819+0000] {subprocess.py:97} INFO - Command exited with return code 0
+[2026-06-09T05:30:48.864+0000] {taskinstance.py:1138} INFO - Marking task as SUCCESS. dag_id=nyc_taxi_lakehouse_pipeline, task_id=silver_transformation, execution_date=20260608T000000, start_date=20260609T053004, end_date=20260609T053048
+[2026-06-09T05:30:48.898+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 0
+[2026-06-09T05:30:48.936+0000] {taskinstance.py:3280} INFO - 1 downstream tasks scheduled from follow-on schedule check

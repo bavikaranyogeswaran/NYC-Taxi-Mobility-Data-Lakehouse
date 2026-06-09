@@ -15,6 +15,9 @@ x-airflow-common:
     - AWS_ACCESS_KEY_ID=minioadmin
     - AWS_SECRET_ACCESS_KEY=minioadmin
     - AWS_DEFAULT_REGION=us-east-1
+    - MINIO_ENDPOINT=http://minio:9000
+    - POSTGRES_HOST=postgres
+    - SPARK_JARS_DIR=/opt/spark/jars
   volumes:
     - ./dags:/opt/airflow/dags
     - ./src:/opt/airflow/src

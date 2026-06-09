@@ -60,57 +60,11 @@ logger = logging.getLogger(__name__)
 def create_spark_session():
     """
     Boots a local PySpark session with Delta Lake support.
-
-    Key configs explained:
-      spark.sql.extensions          : Registers Delta's SQL extensions
-                                      (e.g., DESCRIBE HISTORY, VACUUM commands).
-      spark.sql.catalog.spark_catalog: Makes Delta the default table catalog so
-                                      Spark recognises Delta tables automatically.
-      spark.driver.memory           : 4 GB heap for the driver — safe for 3 x 50 MB files.
-      master("local[*]")            : Use all available CPU cores on this machine.
+    Delegates to the shared spark_utils factory which auto-detects
+    pre-baked Docker JARs vs. local Ivy resolution.
     """
-    from pyspark.sql import SparkSession
-    from delta import configure_spark_with_delta_pip
-
-    # ── Windows fix: PySpark requires HADOOP_HOME + winutils.exe ─────────────
-    # On Windows, Hadoop uses winutils.exe for filesystem permission operations.
-    # We ship winutils.exe inside the project's hadoop/bin/ folder so the user
-    # doesn't need to install anything extra or set system environment variables.
-    hadoop_home = str(PROJECT_ROOT / "hadoop")
-    os.environ["HADOOP_HOME"]       = hadoop_home
-    os.environ["hadoop.home.dir"]   = hadoop_home
-    # Also needed so Spark can locate hadoop.dll at runtime
-    os.environ["PATH"] = hadoop_home + r"\bin;" + os.environ.get("PATH", "")
-
-    logger.info("Initialising SparkSession with Delta Lake extensions ...")
-
-    builder = (
-        SparkSession.builder
-        .appName("NYC_Taxi_Bronze_Ingestion")
-        .master("local[*]")
-        .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
-        .config(
-            "spark.sql.catalog.spark_catalog",
-            "org.apache.spark.sql.delta.catalog.DeltaCatalog",
-        )
-        # S3 / MinIO config
-        .config("spark.hadoop.fs.s3a.endpoint", "http://127.0.0.1:9000")
-        .config("spark.hadoop.fs.s3a.access.key", "minioadmin")
-        .config("spark.hadoop.fs.s3a.secret.key", "minioadmin")
-        .config("spark.hadoop.fs.s3a.path.style.access", "true")
-        .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-        .config("spark.driver.memory", "4g")
-        .config("spark.log.level", "WARN")
-    )
-
-    # configure_spark_with_delta_pip adds the delta-core JAR automatically
-    # — no manual JAR downloads needed.
-    extra_pkgs = ["org.apache.hadoop:hadoop-aws:3.3.4", "com.amazonaws:aws-java-sdk-bundle:1.12.262"]
-    spark = configure_spark_with_delta_pip(builder, extra_packages=extra_pkgs).getOrCreate()
-    spark.sparkContext.setLogLevel("WARN")
-
-    logger.info(f"SparkSession ready  |  version={spark.version}")
-    return spark
+    from utils.spark_utils import create_spark_session as _create
+    return _create("NYC_Taxi_Bronze_Ingestion")
 
 
 # ─────────────────────────────────────────────────────────────────────────────

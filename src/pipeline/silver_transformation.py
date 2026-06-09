@@ -58,41 +58,9 @@ logger = logging.getLogger(__name__)
 # SparkSession (same pattern as Bronze — with Windows HADOOP_HOME fix)
 # ─────────────────────────────────────────────────────────────────────────────
 def create_spark_session():
-    """Boots a local PySpark+Delta session with the Windows HADOOP_HOME fix."""
-    from pyspark.sql import SparkSession
-    from delta import configure_spark_with_delta_pip
-
-    hadoop_home = str(PROJECT_ROOT / "hadoop")
-    os.environ["HADOOP_HOME"]     = hadoop_home
-    os.environ["hadoop.home.dir"] = hadoop_home
-    os.environ["PATH"] = hadoop_home + r"\bin;" + os.environ.get("PATH", "")
-
-    logger.info("Initialising SparkSession ...")
-
-    builder = (
-        SparkSession.builder
-        .appName("NYC_Taxi_Silver_Transformation")
-        .master("local[*]")
-        .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
-        .config(
-            "spark.sql.catalog.spark_catalog",
-            "org.apache.spark.sql.delta.catalog.DeltaCatalog",
-        )
-        # S3 / MinIO config
-        .config("spark.hadoop.fs.s3a.endpoint", "http://127.0.0.1:9000")
-        .config("spark.hadoop.fs.s3a.access.key", "minioadmin")
-        .config("spark.hadoop.fs.s3a.secret.key", "minioadmin")
-        .config("spark.hadoop.fs.s3a.path.style.access", "true")
-        .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-        .config("spark.driver.memory", "4g")
-        .config("spark.log.level", "WARN")
-    )
-
-    extra_pkgs = ["org.apache.hadoop:hadoop-aws:3.3.4", "com.amazonaws:aws-java-sdk-bundle:1.12.262"]
-    spark = configure_spark_with_delta_pip(builder, extra_packages=extra_pkgs).getOrCreate()
-    spark.sparkContext.setLogLevel("WARN")
-    logger.info(f"SparkSession ready  |  version={spark.version}")
-    return spark
+    """Boots PySpark+Delta, delegating to the shared spark_utils factory."""
+    from utils.spark_utils import create_spark_session as _create
+    return _create("NYC_Taxi_Silver_Transformation")
 
 
 # ─────────────────────────────────────────────────────────────────────────────

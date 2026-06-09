@@ -55,41 +55,9 @@ logger = logging.getLogger(__name__)
 # SparkSession
 # ─────────────────────────────────────────────────────────────────────────────
 def create_spark_session():
-    """Boots PySpark+Delta with the Windows HADOOP_HOME fix."""
-    from pyspark.sql import SparkSession
-    from delta import configure_spark_with_delta_pip
-
-    hadoop_home = str(PROJECT_ROOT / "hadoop")
-    os.environ["HADOOP_HOME"]     = hadoop_home
-    os.environ["hadoop.home.dir"] = hadoop_home
-    os.environ["PATH"] = hadoop_home + r"\bin;" + os.environ.get("PATH", "")
-
-    logger.info("Initialising SparkSession ...")
-
-    builder = (
-        SparkSession.builder
-        .appName("NYC_Taxi_Gold_Aggregation")
-        .master("local[*]")
-        .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
-        .config(
-            "spark.sql.catalog.spark_catalog",
-            "org.apache.spark.sql.delta.catalog.DeltaCatalog",
-        )
-        # S3 / MinIO config
-        .config("spark.hadoop.fs.s3a.endpoint", "http://127.0.0.1:9000")
-        .config("spark.hadoop.fs.s3a.access.key", "minioadmin")
-        .config("spark.hadoop.fs.s3a.secret.key", "minioadmin")
-        .config("spark.hadoop.fs.s3a.path.style.access", "true")
-        .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-        .config("spark.driver.memory", "4g")
-        .config("spark.log.level", "WARN")
-    )
-
-    extra_pkgs = ["org.apache.hadoop:hadoop-aws:3.3.4", "com.amazonaws:aws-java-sdk-bundle:1.12.262"]
-    spark = configure_spark_with_delta_pip(builder, extra_packages=extra_pkgs).getOrCreate()
-    spark.sparkContext.setLogLevel("WARN")
-    logger.info(f"SparkSession ready  |  version={spark.version}")
-    return spark
+    """Boots PySpark+Delta, delegating to the shared spark_utils factory."""
+    from utils.spark_utils import create_spark_session as _create
+    return _create("NYC_Taxi_Gold_Aggregation")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -250,9 +218,35 @@ def save_gold_table(df, folder_name: str, table_name: str, write_mode: str):
         .mode(write_mode)
         .save(path_str)
     )
-
     written = df.count()
     logger.info(f"Saved {table_name}: {written:,} rows -> {path_str}")
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TASK 7.2 — Save Gold Tables to Postgres (Serving Layer for Superset)
+# ─────────────────────────────────────────────────────────────────────────────
+def save_gold_to_postgres(df, table_name: str, write_mode: str):
+    """Pushes Gold Data Marts to Postgres so Superset can query them instantly."""
+    # If running inside Airflow Docker, host is 'postgres', else '127.0.0.1'
+    pg_host = os.environ.get("POSTGRES_HOST", "127.0.0.1")
+    url = f"jdbc:postgresql://{pg_host}:5432/superset"
+    properties = {
+        "user": "superset",
+        "password": "superset",
+        "driver": "org.postgresql.Driver",
+        # Use stringtype=unspecified to avoid strict typing errors
+        "stringtype": "unspecified"
+    }
+
+    logger.info(f"Pushing Gold table [{table_name}] to Postgres at {pg_host}...")
+    (
+        df.write.jdbc(
+            url=url,
+            table=table_name,
+            mode=write_mode,
+            properties=properties
+        )
+    )
+    logger.info(f"Successfully pushed [{table_name}] to Postgres.")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -274,7 +268,7 @@ def run_gold_aggregation() -> None:
         # Task 4.2
         silver_df = read_silver_trips(spark)
 
-        # Task 4.3 & 4.5
+        # ── 1. Daily Revenue by Zone
         daily_revenue_df = aggregate_daily_revenue_by_zone(silver_df)
         save_gold_table(
             df=daily_revenue_df,
@@ -282,8 +276,9 @@ def run_gold_aggregation() -> None:
             table_name="gold_daily_revenue_by_zone",
             write_mode=write_mode,
         )
+        save_gold_to_postgres(daily_revenue_df, "gold_daily_revenue", write_mode)
 
-        # Task 4.4 & 4.5
+        # ── 2. Hourly Performance
         hourly_performance_df = aggregate_hourly_performance(silver_df)
         save_gold_table(
             df=hourly_performance_df,
@@ -291,8 +286,9 @@ def run_gold_aggregation() -> None:
             table_name="gold_hourly_performance",
             write_mode=write_mode,
         )
+        save_gold_to_postgres(hourly_performance_df, "gold_hourly_performance", write_mode)
 
-        # Task 4.6
+        # ── 3. Route Summary
         route_summary_df = aggregate_route_summary(silver_df)
         save_gold_table(
             df=route_summary_df,
@@ -300,8 +296,9 @@ def run_gold_aggregation() -> None:
             table_name="gold_route_summary",
             write_mode=write_mode,
         )
+        save_gold_to_postgres(route_summary_df, "gold_route_summary", write_mode)
         
-        # Task 4.7
+        # ── 4. Data Quality Summary
         dq_summary_df = aggregate_dq_summary(spark)
         save_gold_table(
             df=dq_summary_df,
@@ -309,6 +306,7 @@ def run_gold_aggregation() -> None:
             table_name="gold_data_quality_summary",
             write_mode=write_mode,
         )
+        save_gold_to_postgres(dq_summary_df, "gold_dq_summary", write_mode)
 
         elapsed = (datetime.now() - start).total_seconds()
         logger.info("=" * 60)

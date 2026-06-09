@@ -1,0 +1,70 @@
+[2026-06-09T05:29:24.066+0000] {processor.py:161} INFO - Started process (PID=171) to work on /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:29:24.067+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/taxi_pipeline.py for tasks to queue
+[2026-06-09T05:29:24.069+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:29:24.069+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:29:24.102+0000] {processor.py:840} INFO - DAG(s) 'nyc_taxi_lakehouse_pipeline' retrieved from /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:29:24.134+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:29:24.134+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-06-09T05:29:24.163+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:29:24.163+0000] {dag.py:3823} INFO - Setting next_dagrun for nyc_taxi_lakehouse_pipeline to 2026-06-09 00:00:00+00:00, run_after=2026-06-10 00:00:00+00:00
+[2026-06-09T05:29:24.194+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/taxi_pipeline.py took 0.133 seconds
+[2026-06-09T05:29:54.438+0000] {processor.py:161} INFO - Started process (PID=455) to work on /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:29:54.442+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/taxi_pipeline.py for tasks to queue
+[2026-06-09T05:29:54.444+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:29:54.443+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:29:54.529+0000] {processor.py:840} INFO - DAG(s) 'nyc_taxi_lakehouse_pipeline' retrieved from /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:29:54.994+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:29:54.994+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-06-09T05:29:55.035+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:29:55.035+0000] {dag.py:3823} INFO - Setting next_dagrun for nyc_taxi_lakehouse_pipeline to 2026-06-09 00:00:00+00:00, run_after=2026-06-10 00:00:00+00:00
+[2026-06-09T05:29:55.090+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/taxi_pipeline.py took 0.677 seconds
+[2026-06-09T05:30:25.409+0000] {processor.py:161} INFO - Started process (PID=894) to work on /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:30:25.411+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/taxi_pipeline.py for tasks to queue
+[2026-06-09T05:30:25.413+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:30:25.413+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:30:25.443+0000] {processor.py:840} INFO - DAG(s) 'nyc_taxi_lakehouse_pipeline' retrieved from /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:30:25.480+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:30:25.479+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-06-09T05:30:25.522+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:30:25.522+0000] {dag.py:3823} INFO - Setting next_dagrun for nyc_taxi_lakehouse_pipeline to 2026-06-09 00:00:00+00:00, run_after=2026-06-10 00:00:00+00:00
+[2026-06-09T05:30:25.564+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/taxi_pipeline.py took 0.160 seconds
+[2026-06-09T05:30:55.830+0000] {processor.py:161} INFO - Started process (PID=1243) to work on /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:30:55.832+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/taxi_pipeline.py for tasks to queue
+[2026-06-09T05:30:55.834+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:30:55.834+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:30:55.954+0000] {processor.py:840} INFO - DAG(s) 'nyc_taxi_lakehouse_pipeline' retrieved from /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:30:56.011+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:30:56.011+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-06-09T05:30:56.057+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:30:56.057+0000] {dag.py:3823} INFO - Setting next_dagrun for nyc_taxi_lakehouse_pipeline to 2026-06-09 00:00:00+00:00, run_after=2026-06-10 00:00:00+00:00
+[2026-06-09T05:30:56.094+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/taxi_pipeline.py took 0.269 seconds
+[2026-06-09T05:31:26.367+0000] {processor.py:161} INFO - Started process (PID=1643) to work on /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:31:26.369+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/taxi_pipeline.py for tasks to queue
+[2026-06-09T05:31:26.371+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:31:26.371+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:31:26.430+0000] {processor.py:840} INFO - DAG(s) 'nyc_taxi_lakehouse_pipeline' retrieved from /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:31:26.477+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:31:26.476+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-06-09T05:31:26.515+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:31:26.514+0000] {dag.py:3823} INFO - Setting next_dagrun for nyc_taxi_lakehouse_pipeline to 2026-06-09 00:00:00+00:00, run_after=2026-06-10 00:00:00+00:00
+[2026-06-09T05:31:26.539+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/taxi_pipeline.py took 0.179 seconds
+[2026-06-09T05:31:56.654+0000] {processor.py:161} INFO - Started process (PID=1690) to work on /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:31:56.656+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/taxi_pipeline.py for tasks to queue
+[2026-06-09T05:31:56.658+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:31:56.657+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:31:56.705+0000] {processor.py:840} INFO - DAG(s) 'nyc_taxi_lakehouse_pipeline' retrieved from /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:31:56.740+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:31:56.740+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-06-09T05:31:56.771+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:31:56.771+0000] {dag.py:3823} INFO - Setting next_dagrun for nyc_taxi_lakehouse_pipeline to 2026-06-09 00:00:00+00:00, run_after=2026-06-10 00:00:00+00:00
+[2026-06-09T05:31:56.796+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/taxi_pipeline.py took 0.148 seconds
+[2026-06-09T05:32:27.064+0000] {processor.py:161} INFO - Started process (PID=1695) to work on /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:32:27.065+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/taxi_pipeline.py for tasks to queue
+[2026-06-09T05:32:27.066+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:32:27.066+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:32:27.105+0000] {processor.py:840} INFO - DAG(s) 'nyc_taxi_lakehouse_pipeline' retrieved from /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:32:27.134+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:32:27.134+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-06-09T05:32:27.162+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:32:27.162+0000] {dag.py:3823} INFO - Setting next_dagrun for nyc_taxi_lakehouse_pipeline to 2026-06-09 00:00:00+00:00, run_after=2026-06-10 00:00:00+00:00
+[2026-06-09T05:32:27.185+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/taxi_pipeline.py took 0.125 seconds
+[2026-06-09T05:32:57.415+0000] {processor.py:161} INFO - Started process (PID=1700) to work on /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:32:57.416+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/taxi_pipeline.py for tasks to queue
+[2026-06-09T05:32:57.417+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:32:57.417+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:32:57.458+0000] {processor.py:840} INFO - DAG(s) 'nyc_taxi_lakehouse_pipeline' retrieved from /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:32:57.489+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:32:57.489+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-06-09T05:32:57.515+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:32:57.514+0000] {dag.py:3823} INFO - Setting next_dagrun for nyc_taxi_lakehouse_pipeline to 2026-06-09 00:00:00+00:00, run_after=2026-06-10 00:00:00+00:00
+[2026-06-09T05:32:57.537+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/taxi_pipeline.py took 0.126 seconds
+[2026-06-09T05:33:27.819+0000] {processor.py:161} INFO - Started process (PID=1705) to work on /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:33:27.820+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/taxi_pipeline.py for tasks to queue
+[2026-06-09T05:33:27.822+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:33:27.821+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:33:27.860+0000] {processor.py:840} INFO - DAG(s) 'nyc_taxi_lakehouse_pipeline' retrieved from /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:33:27.887+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:33:27.887+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-06-09T05:33:27.908+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:33:27.908+0000] {dag.py:3823} INFO - Setting next_dagrun for nyc_taxi_lakehouse_pipeline to 2026-06-09 00:00:00+00:00, run_after=2026-06-10 00:00:00+00:00
+[2026-06-09T05:33:27.931+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/taxi_pipeline.py took 0.116 seconds
+[2026-06-09T05:33:58.130+0000] {processor.py:161} INFO - Started process (PID=1710) to work on /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:33:58.132+0000] {processor.py:830} INFO - Processing file /opt/airflow/dags/taxi_pipeline.py for tasks to queue
+[2026-06-09T05:33:58.133+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:33:58.133+0000] {dagbag.py:538} INFO - Filling up the DagBag from /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:33:58.171+0000] {processor.py:840} INFO - DAG(s) 'nyc_taxi_lakehouse_pipeline' retrieved from /opt/airflow/dags/taxi_pipeline.py
+[2026-06-09T05:33:58.194+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:33:58.194+0000] {dag.py:3036} INFO - Sync 1 DAGs
+[2026-06-09T05:33:58.217+0000] {logging_mixin.py:188} INFO - [2026-06-09T05:33:58.217+0000] {dag.py:3823} INFO - Setting next_dagrun for nyc_taxi_lakehouse_pipeline to 2026-06-09 00:00:00+00:00, run_after=2026-06-10 00:00:00+00:00
+[2026-06-09T05:33:58.241+0000] {processor.py:183} INFO - Processing /opt/airflow/dags/taxi_pipeline.py took 0.115 seconds
