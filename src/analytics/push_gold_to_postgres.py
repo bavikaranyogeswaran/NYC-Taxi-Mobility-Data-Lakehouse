@@ -59,7 +59,7 @@ def push_table(con_duckdb, con_pg, table_name: str, parquet_dir: Path):
         t = str(duckdb_type_code).upper()
         if "INT" in t:
             return "BIGINT"
-        if "FLOAT" in t or "DOUBLE" in t or "DECIMAL" in t or "HUGEINT" in t:
+        if "FLOAT" in t or "DOUBLE" in t or "DECIMAL" in t or "HUGEINT" in t or "NUMBER" in t or "NUMERIC" in t:
             return "DOUBLE PRECISION"
         if "TIMESTAMP" in t:
             return "TIMESTAMP"

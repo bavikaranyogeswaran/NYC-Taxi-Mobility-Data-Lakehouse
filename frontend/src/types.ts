@@ -19,7 +19,8 @@ export interface OverviewData {
 export interface HourlyDemand {
   pickup_hour: number;
   total_trips: number;
-  total_revenue: number;
+  avg_duration_minutes: number;
+  avg_speed_mph: number;
 }
 
 export interface TopPickupZone {

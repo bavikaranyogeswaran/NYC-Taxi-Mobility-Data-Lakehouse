@@ -6,18 +6,31 @@ import type { OverviewData } from '../types'
 export default function Overview() {
   const [data, setData] = useState<OverviewData | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetch('http://localhost:8000/api/overview')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(`API error: ${res.status}`)
+        return res.json()
+      })
       .then((d: OverviewData) => {
         setData(d)
         setLoading(false)
       })
-      .catch(console.error)
+      .catch(err => {
+        console.error(err)
+        setError(err.message)
+        setLoading(false)
+      })
   }, [])
 
-  if (loading || !data) return <div className="animate-pulse h-64 glass-card"></div>
+  if (loading) return <div className="animate-pulse h-64 glass-card"></div>
+  if (error || !data?.summary) return (
+    <div className="glass-card p-6 text-slate-400 text-sm">
+      {error ? `Failed to load data: ${error}` : 'No data available'}
+    </div>
+  )
 
   const formatCurrency = (val: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val)
   const formatNumber = (val: number) => new Intl.NumberFormat('en-US').format(val)

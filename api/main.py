@@ -44,11 +44,11 @@ def get_overview():
             # Aggregate overall stats
             cur.execute("""
                 SELECT
-                    SUM(total_trips) as total_trips,
-                    SUM(total_revenue) as total_revenue,
-                    AVG(avg_fare) as average_fare,
-                    AVG(avg_duration) as average_duration_minutes
-                FROM gold_daily_revenue
+                    COALESCE(SUM(r.total_trips), 0) as total_trips,
+                    COALESCE(SUM(r.total_revenue), 0) as total_revenue,
+                    COALESCE(AVG(r.avg_fare), 0) as average_fare,
+                    COALESCE((SELECT AVG(avg_duration_minutes) FROM gold_hourly_performance), 0) as average_duration_minutes
+                FROM gold_daily_revenue r
             """)
             summary = cur.fetchone()
 
@@ -76,7 +76,7 @@ def get_demand_analysis():
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("""
-                SELECT pickup_hour, total_trips, total_revenue
+                SELECT pickup_hour, total_trips, avg_duration_minutes, avg_speed_mph
                 FROM gold_hourly_performance
                 ORDER BY pickup_hour ASC
             """)
