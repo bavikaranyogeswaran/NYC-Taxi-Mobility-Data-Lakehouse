@@ -18,6 +18,8 @@ x-airflow-common:
     - MINIO_ENDPOINT=http://minio:9000
     - POSTGRES_HOST=postgres
     - SPARK_JARS_DIR=/opt/spark/jars
+    - AIRFLOW__CORE__FERNET_KEY=${AIRFLOW__CORE__FERNET_KEY}
+    - AIRFLOW__WEBSERVER__SECRET_KEY=${AIRFLOW__WEBSERVER__SECRET_KEY}
   volumes:
     - ./dags:/opt/airflow/dags
     - ./src:/opt/airflow/src
@@ -107,6 +109,8 @@ services:
       - _AIRFLOW_WWW_USER_PASSWORD=${_AIRFLOW_WWW_USER_PASSWORD}
       - _AIRFLOW_WWW_USER_EMAIL=${_AIRFLOW_WWW_USER_EMAIL}
       - _AIRFLOW_WWW_USER_ROLE=Admin
+      - AIRFLOW__CORE__FERNET_KEY=${AIRFLOW__CORE__FERNET_KEY}
+      - AIRFLOW__WEBSERVER__SECRET_KEY=${AIRFLOW__WEBSERVER__SECRET_KEY}
 
   airflow-webserver:
     <<: *airflow-common
