@@ -251,7 +251,7 @@ services:
     restart: unless-stopped
 
   statsd-exporter:
-    image: prom/statsd-exporter:v0.27.0
+    image: prom/statsd-exporter:v0.26.1
     volumes:
       - ./monitoring/statsd_mapping.yml:/etc/statsd_mapping.yml:ro
     command: --statsd.mapping-config=/etc/statsd_mapping.yml
