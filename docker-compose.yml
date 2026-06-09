@@ -159,8 +159,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "5173:80"
-    mem_limit: 64m
+      - "5173:4173"
+    mem_limit: 128m
     restart: unless-stopped
 
 volumes:

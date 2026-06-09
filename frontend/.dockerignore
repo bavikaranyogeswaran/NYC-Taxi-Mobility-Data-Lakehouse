@@ -3,3 +3,7 @@ dist
 dist-ssr
 *.local
 .git
+.gitignore
+.env*
+coverage
+*.log
